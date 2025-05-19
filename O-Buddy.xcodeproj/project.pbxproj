@@ -7,26 +7,26 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		7F9A53ED2DD32DE300E12C5A /* Ch6-Rust-Eze.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ch6-Rust-Eze.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F9A53ED2DD32DE300E12C5A /* O-Buddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "O-Buddy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7F9A54032DD32E5D00E12C5A /* Exceptions for "Ch6-Rust-Eze" folder in "Ch6-Rust-Eze" target */ = {
+		7F9A54032DD32E5D00E12C5A /* Exceptions for "O-Buddy" folder in "O-Buddy" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 7F9A53EC2DD32DE300E12C5A /* Ch6-Rust-Eze */;
+			target = 7F9A53EC2DD32DE300E12C5A /* O-Buddy */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		7F9A53EF2DD32DE300E12C5A /* Ch6-Rust-Eze */ = {
+		7F9A53EF2DD32DE300E12C5A /* O-Buddy */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				7F9A54032DD32E5D00E12C5A /* Exceptions for "Ch6-Rust-Eze" folder in "Ch6-Rust-Eze" target */,
+				7F9A54032DD32E5D00E12C5A /* Exceptions for "O-Buddy" folder in "O-Buddy" target */,
 			);
-			path = "Ch6-Rust-Eze";
+			path = "O-Buddy";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +45,7 @@
 		7F9A53E42DD32DE300E12C5A = {
 			isa = PBXGroup;
 			children = (
-				7F9A53EF2DD32DE300E12C5A /* Ch6-Rust-Eze */,
+				7F9A53EF2DD32DE300E12C5A /* O-Buddy */,
 				7F9A53EE2DD32DE300E12C5A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		7F9A53EE2DD32DE300E12C5A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7F9A53ED2DD32DE300E12C5A /* Ch6-Rust-Eze.app */,
+				7F9A53ED2DD32DE300E12C5A /* O-Buddy.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7F9A53EC2DD32DE300E12C5A /* Ch6-Rust-Eze */ = {
+		7F9A53EC2DD32DE300E12C5A /* O-Buddy */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "Ch6-Rust-Eze" */;
+			buildConfigurationList = 7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "O-Buddy" */;
 			buildPhases = (
 				7F9A53E92DD32DE300E12C5A /* Sources */,
 				7F9A53EA2DD32DE300E12C5A /* Frameworks */,
@@ -74,13 +74,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				7F9A53EF2DD32DE300E12C5A /* Ch6-Rust-Eze */,
+				7F9A53EF2DD32DE300E12C5A /* O-Buddy */,
 			);
-			name = "Ch6-Rust-Eze";
+			name = "O-Buddy";
 			packageProductDependencies = (
 			);
 			productName = PROVAOBDService;
-			productReference = 7F9A53ED2DD32DE300E12C5A /* Ch6-Rust-Eze.app */;
+			productReference = 7F9A53ED2DD32DE300E12C5A /* O-Buddy.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 7F9A53E82DD32DE300E12C5A /* Build configuration list for PBXProject "Ch6-Rust-Eze" */;
+			buildConfigurationList = 7F9A53E82DD32DE300E12C5A /* Build configuration list for PBXProject "O-Buddy" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7F9A53EC2DD32DE300E12C5A /* Ch6-Rust-Eze */,
+				7F9A53EC2DD32DE300E12C5A /* O-Buddy */,
 			);
 		};
 /* End PBXProject section */
@@ -264,11 +264,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Ch6-Rust-Eze/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"O-Buddy/Preview Content\"";
 				DEVELOPMENT_TEAM = 28MPBQ5XV2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Ch6-Rust-Eze/Info.plist";
+				INFOPLIST_FILE = "O-Buddy/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
@@ -282,7 +282,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.danielefontana.Ch6-Rust-Eze";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.danielefontana.O-Buddy";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -297,11 +297,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Ch6-Rust-Eze/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"O-Buddy/Preview Content\"";
 				DEVELOPMENT_TEAM = 28MPBQ5XV2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Ch6-Rust-Eze/Info.plist";
+				INFOPLIST_FILE = "O-Buddy/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
@@ -315,7 +315,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.danielefontana.Ch6-Rust-Eze";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.danielefontana.O-Buddy";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -326,7 +326,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7F9A53E82DD32DE300E12C5A /* Build configuration list for PBXProject "Ch6-Rust-Eze" */ = {
+		7F9A53E82DD32DE300E12C5A /* Build configuration list for PBXProject "O-Buddy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F9A53F92DD32DE500E12C5A /* Debug */,
@@ -335,7 +335,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "Ch6-Rust-Eze" */ = {
+		7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "O-Buddy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F9A53FC2DD32DE500E12C5A /* Debug */,
