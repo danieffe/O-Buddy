@@ -12,7 +12,6 @@ import CoreBluetooth
 extension OBDViewModel {
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        defer { isWaitingForResponse = false }
 
         guard let data = characteristic.value,
               let chunk = String(data: data, encoding: .ascii) ?? String(data: data, encoding: .utf8) else {
@@ -105,7 +104,26 @@ extension OBDViewModel {
             print("✅ RPM: \(rpmValue)")
         }
     }
+    
+    internal func parseFuelPressure(from response: String) {
+        let cleanResponse = response.replacingOccurrences(of: " ", with: "")
+        
+        guard cleanResponse.count >= 10,
+              cleanResponse.hasPrefix("7E8"),
+              cleanResponse.dropFirst(3).prefix(2) == "03",
+              cleanResponse.dropFirst(5).prefix(2) == "41",
+              cleanResponse.dropFirst(7).prefix(2) == "0A",
+              let pressureValue = Int(cleanResponse.dropFirst(9).prefix(2), radix: 16) else {
+            print("🚫 Formato pressione carburante non valido: \(response)")
+            return
+        }
 
+        DispatchQueue.main.async {
+            self.fuelPressure = pressureValue * 3 // Converti kPa in unità più leggibili
+            print("✅ Pressione carburante: \(self.fuelPressure)")
+        }
+    }
+    
     internal func mapProtocolNumber(_ num: String) -> String {
         switch num {
         case "6": return "ISO 15765-4 (CAN)"
