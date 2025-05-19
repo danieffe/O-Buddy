@@ -7,26 +7,26 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		7F9A53ED2DD32DE300E12C5A /* PROVAOBDService.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PROVAOBDService.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F9A53ED2DD32DE300E12C5A /* Ch6-Rust-Eze.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ch6-Rust-Eze.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7F9A54032DD32E5D00E12C5A /* Exceptions for "PROVAOBDService" folder in "PROVAOBDService" target */ = {
+		7F9A54032DD32E5D00E12C5A /* Exceptions for "Ch6-Rust-Eze" folder in "Ch6-Rust-Eze" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 7F9A53EC2DD32DE300E12C5A /* PROVAOBDService */;
+			target = 7F9A53EC2DD32DE300E12C5A /* Ch6-Rust-Eze */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		7F9A53EF2DD32DE300E12C5A /* PROVAOBDService */ = {
+		7F9A53EF2DD32DE300E12C5A /* Ch6-Rust-Eze */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				7F9A54032DD32E5D00E12C5A /* Exceptions for "PROVAOBDService" folder in "PROVAOBDService" target */,
+				7F9A54032DD32E5D00E12C5A /* Exceptions for "Ch6-Rust-Eze" folder in "Ch6-Rust-Eze" target */,
 			);
-			path = PROVAOBDService;
+			path = "Ch6-Rust-Eze";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +45,7 @@
 		7F9A53E42DD32DE300E12C5A = {
 			isa = PBXGroup;
 			children = (
-				7F9A53EF2DD32DE300E12C5A /* PROVAOBDService */,
+				7F9A53EF2DD32DE300E12C5A /* Ch6-Rust-Eze */,
 				7F9A53EE2DD32DE300E12C5A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		7F9A53EE2DD32DE300E12C5A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7F9A53ED2DD32DE300E12C5A /* PROVAOBDService.app */,
+				7F9A53ED2DD32DE300E12C5A /* Ch6-Rust-Eze.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7F9A53EC2DD32DE300E12C5A /* PROVAOBDService */ = {
+		7F9A53EC2DD32DE300E12C5A /* Ch6-Rust-Eze */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "PROVAOBDService" */;
+			buildConfigurationList = 7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "Ch6-Rust-Eze" */;
 			buildPhases = (
 				7F9A53E92DD32DE300E12C5A /* Sources */,
 				7F9A53EA2DD32DE300E12C5A /* Frameworks */,
@@ -74,13 +74,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				7F9A53EF2DD32DE300E12C5A /* PROVAOBDService */,
+				7F9A53EF2DD32DE300E12C5A /* Ch6-Rust-Eze */,
 			);
-			name = PROVAOBDService;
+			name = "Ch6-Rust-Eze";
 			packageProductDependencies = (
 			);
 			productName = PROVAOBDService;
-			productReference = 7F9A53ED2DD32DE300E12C5A /* PROVAOBDService.app */;
+			productReference = 7F9A53ED2DD32DE300E12C5A /* Ch6-Rust-Eze.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7F9A53EC2DD32DE300E12C5A /* PROVAOBDService */,
+				7F9A53EC2DD32DE300E12C5A /* Ch6-Rust-Eze */,
 			);
 		};
 /* End PBXProject section */
@@ -264,11 +264,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"PROVAOBDService/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Ch6-Rust-Eze/Preview Content\"";
 				DEVELOPMENT_TEAM = 28MPBQ5XV2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PROVAOBDService/Info.plist;
+				INFOPLIST_FILE = "Ch6-Rust-Eze/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -296,11 +297,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"PROVAOBDService/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Ch6-Rust-Eze/Preview Content\"";
 				DEVELOPMENT_TEAM = 28MPBQ5XV2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PROVAOBDService/Info.plist;
+				INFOPLIST_FILE = "Ch6-Rust-Eze/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "We need Bluetooth to connect nearby OBDs Device";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -333,7 +335,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "PROVAOBDService" */ = {
+		7F9A53FB2DD32DE500E12C5A /* Build configuration list for PBXNativeTarget "Ch6-Rust-Eze" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F9A53FC2DD32DE500E12C5A /* Debug */,
