@@ -52,6 +52,20 @@ class OBDViewModel: NSObject, ObservableObject {
         initializationStatus = "Inizializzazione Bluetooth..."
     }
 
+    // Method to stop the driving session
+    func stopDrivingSession() {
+        dataTimer?.invalidate()
+        dataTimer = nil // Ensure timer is nil after invalidation
+        initializationStatus = "Sessione interrotta" // Update status
+        print("OBD Session Stopped")
+
+        // Optional: Disconnect from the peripheral
+        if let peripheral = obdPeripheral {
+            // CHANGE: Use cancelPeripheralConnection
+            centralManager.cancelPeripheralConnection(peripheral)
+        }
+    }
+
     deinit {
         dataTimer?.invalidate()
         if let peripheral = obdPeripheral,
