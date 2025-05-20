@@ -279,6 +279,14 @@ struct BrakingEventsListView: View {
                             .font(.caption)
                     }
                     .foregroundColor(.secondary)
+                    HStack {
+                        Image(systemName: "drop.fill")
+                        Text(String(format: "Carburante stimato: %.3f L", event.fuelUsedLiters))
+                            .font(.caption)
+                    }
+                   
+
+                    .foregroundColor(.secondary)
                 }
                 .padding()
                 .background(Color(.systemGray6))
