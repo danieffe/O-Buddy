@@ -57,14 +57,36 @@ class OBDViewModel: NSObject, ObservableObject {
         dataTimer?.invalidate()
         dataTimer = nil // Ensure timer is nil after invalidation
         initializationStatus = "Sessione interrotta" // Update status
+        isConnected = false // Update connection status
         print("OBD Session Stopped")
 
         // Optional: Disconnect from the peripheral
         if let peripheral = obdPeripheral {
-            // CHANGE: Use cancelPeripheralConnection
             centralManager.cancelPeripheralConnection(peripheral)
         }
+        obdPeripheral = nil // Clear the peripheral reference
+        writeCharacteristic = nil // Clear the characteristic reference
+        isInitialized = false // Reset initialization state
+        currentPidIndex = 0 // Reset command index
     }
+
+    // ADD: Method to start the driving session
+    func startDrivingSession() {
+        // Only start if Bluetooth is powered on and not already connected
+        guard centralManager.state == .poweredOn && !isConnected else {
+            if centralManager.state != .poweredOn {
+                initializationStatus = "Accendi il Bluetooth per iniziare"
+            } else if isConnected {
+                initializationStatus = "Già connesso e in esecuzione"
+            }
+            return
+        }
+
+        initializationStatus = "Ricerca dispositivi OBD..."
+        centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+        print("OBD Session Started (Scanning)")
+    }
+
 
     deinit {
         dataTimer?.invalidate()
@@ -76,3 +98,5 @@ class OBDViewModel: NSObject, ObservableObject {
         centralManager.stopScan()
     }
 }
+
+// The rest of the file remains the samehe rest of the file remains the same

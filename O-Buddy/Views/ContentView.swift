@@ -76,12 +76,17 @@ struct ContentView: View {
 
                 Divider()
 
-                // ADD: Button to stop the session
-                Button("Stop Session") {
-                    obdViewModel.stopDrivingSession()
+                // CHANGE: Button to toggle the session state
+                Button(obdViewModel.isConnected ? "Stop Session" : "Start Session") {
+                    if obdViewModel.isConnected {
+                        obdViewModel.stopDrivingSession()
+                    } else {
+                        obdViewModel.startDrivingSession()
+                    }
                 }
                 .padding()
-                .background(Color.red)
+                // CHANGE: Button color based on connection status
+                .background(obdViewModel.isConnected ? Color.red : Color.green)
                 .foregroundColor(.white)
                 .cornerRadius(10)
 
@@ -213,6 +218,7 @@ struct BrakingIntensityView: View {
 
                 Circle()
                     .trim(from: 0, to: CGFloat(intensity))
+                    // CHANGE: Use StrokeStyle instead of Style
                     .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .foregroundColor(intensity > 0.7 ? .red : (intensity > 0.4 ? .orange : .green))
                     .rotationEffect(Angle(degrees: -90))
@@ -288,17 +294,17 @@ struct BrakingEventsListView: View {
                         Image(systemName: "gauge.with.dots.needle.50percent")
                         Text("Intensità: \(String(format: "%.0f", event.intensity * 100))%")
                             .font(.caption)
+                        }
+                        .foregroundColor(.secondary)
                     }
-                    .foregroundColor(.secondary)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
             }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
     }
-}
 
 struct DebugSectionView: View {
     let lastCommand: String
