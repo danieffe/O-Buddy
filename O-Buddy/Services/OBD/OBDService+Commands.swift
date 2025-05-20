@@ -24,27 +24,27 @@ extension OBDViewModel {
     }
 
     internal func sendCommand(_ command: String) {
-        guard !isWaitingForResponse, let writeChar = writeCharacteristic else {
-            print("⏳ Salto richiesta: in attesa di risposta precedente")
+        guard let writeChar = writeCharacteristic else {
+            print("⏳ Caratteristica di scrittura non disponibile")
             return
         }
 
-        isWaitingForResponse = true
         lastCommand = command
 
         let commandWithReturn = command + "\r"
         if let data = commandWithReturn.data(using: .utf8) {
             print("🚀 Invio: \(command)")
-            obdPeripheral?.writeValue(data, for: writeChar, type: .withResponse)
+            obdPeripheral?.writeValue(data, for: writeChar, type: .withoutResponse)
         }
     }
 
     private func startDataUpdates() {
         dataTimer?.invalidate()
-        dataTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+        dataTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.sendNextPidRequest()
         }
     }
+    
 
     private func sendNextPidRequest() {
         guard isInitialized else { return }
