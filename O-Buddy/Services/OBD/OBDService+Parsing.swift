@@ -25,7 +25,8 @@ extension OBDViewModel {
         guard responseBuffer.contains(">") else { return }
 
         processCompleteResponse(responseBuffer)
-        responseBuffer = ""
+        responseBuffer = "" // Reset buffer after processing
+        // REMOVE: Old logic for sending next setup command here
     }
 
     internal func processCompleteResponse(_ response: String) {
@@ -36,22 +37,45 @@ extension OBDViewModel {
             self.cleanedResponse = cleaned
         }
 
-        if lastCommand == "ATI" {
-            adapterVersion = cleaned
-        }
-        else if lastCommand == "ATDPN" {
-            protocolStatus = mapProtocolNumber(cleaned)
-        }
-        else if lastCommand == "01 0D" {
-            parseSpeed(from: cleaned)
-        }
-        else if lastCommand == "01 0C" {
-            parseRPM(from: cleaned)
-        }
+        // ADD: Set waiting flag to false as response is received
+        isWaitingForResponse = false
 
-        if !isInitialized && setupCommands.contains(lastCommand) {
-            currentCommandIndex += 1
-            sendNextSetupCommand()
+        // Handle initialization commands
+        if !isInitialized {
+             if lastCommand == "ATI" {
+                adapterVersion = cleaned
+            }
+            else if lastCommand == "ATDPN" {
+                protocolStatus = mapProtocolNumber(cleaned)
+            }
+
+            // ADD: Check if the last command was the final setup command ("0100")
+            if lastCommand == setupCommands.last {
+                isInitialized = true
+                initializationStatus = "Inizializzazione completata. Avvio polling dati..."
+                startPollingPIDs() // Start polling after initialization
+            } else if setupCommands.contains(lastCommand) {
+                 // Only send the next setup command if the response is for a setup command
+                currentCommandIndex += 1
+                sendNextSetupCommand()
+            }
+
+        } else {
+            // Handle PID responses after initialization
+            switch lastCommand {
+            case "01 0D":
+                parseSpeed(from: cleaned)
+            case "01 0C":
+                parseRPM(from: cleaned)
+            // ADD: Handle Fuel Pressure PID
+            case "01 0A":
+                parseFuelPressure(from: cleaned)
+            default:
+                // Handle unexpected responses during polling if necessary
+                print("Received unexpected response for command: \(lastCommand)")
+            }
+            // ADD: Immediately send the next PID command after processing a response
+            sendNextPidCommand()
         }
     }
 
@@ -60,7 +84,7 @@ extension OBDViewModel {
             .replacingOccurrences(of: "\r", with: "")
             .replacingOccurrences(of: "\n", with: " ")
             .replacingOccurrences(of: ">", with: "")
-            //.trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: .whitespacesAndNewlines) // ADD: Trim whitespace
     }
 
     internal func parseSpeed(from response: String) {
@@ -74,6 +98,7 @@ extension OBDViewModel {
               cleanResponse.dropFirst(7).prefix(2) == "0D",
               let speedValue = Int(cleanResponse.dropFirst(9).prefix(2), radix: 16) else {
             print("🚫 Formato velocità non valido: \(response)")
+            DispatchQueue.main.async { self.speed = 0 } // ADD: Reset on error
             return
         }
 
@@ -95,6 +120,7 @@ extension OBDViewModel {
               let byteA = Int(cleanResponse.dropFirst(9).prefix(2), radix: 16),
               let byteB = Int(cleanResponse.dropFirst(11).prefix(2), radix: 16) else {
             print("🚫 Formato RPM non valido: \(response)")
+            DispatchQueue.main.async { self.rpm = 0 } // ADD: Reset on error
             return
         }
 
@@ -104,10 +130,10 @@ extension OBDViewModel {
             print("✅ RPM: \(rpmValue)")
         }
     }
-    
+
     internal func parseFuelPressure(from response: String) {
         let cleanResponse = response.replacingOccurrences(of: " ", with: "")
-        
+
         guard cleanResponse.count >= 10,
               cleanResponse.hasPrefix("7E8"),
               cleanResponse.dropFirst(3).prefix(2) == "03",
@@ -115,21 +141,26 @@ extension OBDViewModel {
               cleanResponse.dropFirst(7).prefix(2) == "0A",
               let pressureValue = Int(cleanResponse.dropFirst(9).prefix(2), radix: 16) else {
             print("🚫 Formato pressione carburante non valido: \(response)")
+            DispatchQueue.main.async { self.fuelPressure = 0 } // ADD: Reset on error
             return
         }
 
         DispatchQueue.main.async {
-            self.fuelPressure = pressureValue * 3 // Converti kPa in unità più leggibili
-            print("✅ Pressione carburante: \(self.fuelPressure)")
+            // CHANGE: Calculation corrected for Fuel Pressure PID 01 0A (A*3 kPa)
+            self.fuelPressure = pressureValue * 3
+            print("✅ Pressione carburante: \(self.fuelPressure) kPa")
         }
     }
-    
+
     internal func mapProtocolNumber(_ num: String) -> String {
-        switch num {
+        switch num.trimmingCharacters(in: .whitespacesAndNewlines) { // ADD: Trim whitespace
         case "6": return "ISO 15765-4 (CAN)"
         case "3": return "ISO 9141-2"
         case "4": return "ISO 14230-4 (KWP)"
+        // ADD: Handle "AUTO" response from ATSP0
+        case "A": return "AUTO"
         default: return "Protocollo \(num)"
         }
     }
 }
+// The rest of the file remains the same

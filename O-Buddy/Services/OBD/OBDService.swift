@@ -27,7 +27,8 @@ class OBDViewModel: NSObject, ObservableObject {
     internal var obdPeripheral: CBPeripheral?
     internal var writeCharacteristic: CBCharacteristic?
     internal var responseBuffer = ""
-    internal var dataTimer: Timer?
+    // REMOVE: pollingTimer property
+    // REMOVE: pollingInterval property
     internal var isWaitingForResponse = false
 
     // UUID servizi OBD (resta invariato)
@@ -41,7 +42,8 @@ class OBDViewModel: NSObject, ObservableObject {
     ]
 
     // Sequenza PID aggiornata
-    internal let pidSequence = ["01 0D", "01 0C", "01 0D", "01 0A"] // Speed, RPM, Fuel Pressure
+    // CHANGE: Removed duplicate "01 0D"
+    internal let pidSequence = ["01 0D", "01 0C", "01 0A"] // Speed, RPM, Fuel Pressure
     internal var currentCommandIndex = 0
     internal var currentPidIndex = 0
     internal var isInitialized = false
@@ -54,8 +56,7 @@ class OBDViewModel: NSObject, ObservableObject {
 
     // Method to stop the driving session
     func stopDrivingSession() {
-        dataTimer?.invalidate()
-        dataTimer = nil // Ensure timer is nil after invalidation
+        // REMOVE: Timer invalidation as pollingTimer is removed
         initializationStatus = "Sessione interrotta" // Update status
         isConnected = false // Update connection status
         print("OBD Session Stopped")
@@ -67,7 +68,17 @@ class OBDViewModel: NSObject, ObservableObject {
         obdPeripheral = nil // Clear the peripheral reference
         writeCharacteristic = nil // Clear the characteristic reference
         isInitialized = false // Reset initialization state
-        currentPidIndex = 0 // Reset command index
+        currentPidIndex = 0 // Reset PID index
+        currentCommandIndex = 0 // ADD: Reset setup command index
+        isWaitingForResponse = false // ADD: Reset waiting flag
+        // ADD: Reset published values on stop
+        DispatchQueue.main.async {
+            self.speed = 0
+            self.rpm = 0
+            self.fuelPressure = 0
+            self.rawResponse = ""
+            self.cleanedResponse = ""
+        }
     }
 
     // ADD: Method to start the driving session
@@ -87,9 +98,34 @@ class OBDViewModel: NSObject, ObservableObject {
         print("OBD Session Started (Scanning)")
     }
 
+    // ADD: Method to start PID polling
+    internal func startPollingPIDs() {
+        print("Starting PID polling...")
+        // ADD: Send the first PID command immediately
+        currentPidIndex = 0 // Start from the beginning of the PID sequence
+        sendNextPidCommand()
+    }
+
+    // ADD: Method to send the next PID command
+    internal func sendNextPidCommand() {
+        guard isConnected && isInitialized && !isWaitingForResponse else {
+            // If not connected, not initialized, or waiting for a response, don't send
+            return
+        }
+
+        // ADD: Get the command for the current PID index
+        let command = pidSequence[currentPidIndex]
+        print("⬆️ Invio PID (\(currentPidIndex + 1)/\(pidSequence.count)): \(command)")
+        sendCommand(command)
+
+        isWaitingForResponse = true
+        // ADD: Move to the next PID index, loop around
+        currentPidIndex = (currentPidIndex + 1) % pidSequence.count
+    }
+
 
     deinit {
-        dataTimer?.invalidate()
+        // REMOVE: Timer invalidation
         if let peripheral = obdPeripheral,
            let service = peripheral.services?.first(where: { $0.uuid == obdServiceUUID }),
            let characteristic = service.characteristics?.first(where: { $0.uuid == obdNotifyCharacteristicUUID }) {
@@ -99,4 +135,4 @@ class OBDViewModel: NSObject, ObservableObject {
     }
 }
 
-// The rest of the file remains the samehe rest of the file remains the same
+// The rest of the file remains the same

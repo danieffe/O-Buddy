@@ -15,7 +15,8 @@ extension OBDViewModel {
         guard currentCommandIndex < setupCommands.count else {
             isInitialized = true
             initializationStatus = "OBD pronto [\(protocolStatus)]"
-            startDataUpdates()
+            // CHANGE: Call startPollingPIDs from OBDService.swift
+            startPollingPIDs()
             return
         }
 
@@ -38,18 +39,8 @@ extension OBDViewModel {
         }
     }
 
-    private func startDataUpdates() {
-        dataTimer?.invalidate()
-        dataTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            self?.sendNextPidRequest()
-        }
-    }
-    
-
-    private func sendNextPidRequest() {
-        guard isInitialized else { return }
-        let pid = pidSequence[currentPidIndex]
-        sendCommand(pid)
-        currentPidIndex = (currentPidIndex + 1) % pidSequence.count
-    }
+    // REMOVE: Redundant startDataUpdates function, replaced by startPollingPIDs in OBDService.swift
+    // REMOVE: Redundant sendNextPidRequest function, replaced by sendNextPidCommand in OBDService.swift
 }
+
+// The rest of the file remains the same
