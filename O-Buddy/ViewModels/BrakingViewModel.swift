@@ -1,30 +1,28 @@
-//
-//  BrakingViewModel.swift
-//  PROVAOBDService
-//
-//  Created by Daniele Fontana on 17/05/25.
-//
-
-
-
 import Foundation
 import CoreLocation
 import Combine
+
+struct SpeedSample {
+    let speed: Int
+    let timestamp: Date
+}
 
 class BrakingViewModel: ObservableObject {
     @Published var brakingEvents: [BrakingEvent] = []
     @Published var isBraking = false
     @Published var brakingIntensity: Double = 0
     
-    private var previousSpeed: Int = 0
     private var previousRPM: Int = 0
     private var previousFuelPressure: Int = 0
     private var lastUpdateTime = Date()
     
+    private var speedHistory: [SpeedSample] = []
+    
     // Soglie di rilevamento
-    private let speedDecelThreshold = 15.0 // km/h/s
+    private let speedDecelThreshold = 10.8 // km/h/s
     private let rpmDropThreshold = 500 // RPM/s
     private let fuelPressureThreshold = 20 // Unità/s
+    private let windowDuration: TimeInterval = 3.0 // Durata finestra mobile in secondi
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -53,53 +51,47 @@ class BrakingViewModel: ObservableObject {
     
     private func checkBrakingParameters(newSpeed: Int) {
         let now = Date()
-        let timeDelta = now.timeIntervalSince(lastUpdateTime)
         
-        // Filtra intervalli non validi
-        guard timeDelta > 0.1 && timeDelta < 2 else {
-            previousSpeed = newSpeed
-            lastUpdateTime = now
-            return
-        }
+        // Aggiunge nuovo valore alla cronologia
+        speedHistory.append(SpeedSample(speed: newSpeed, timestamp: now))
         
-        // Calcola le variazioni
-        let speedDelta = previousSpeed - newSpeed
-        let decelerationRate = Double(speedDelta) / timeDelta
+        // Rimuove campioni più vecchi della finestra temporale
+        speedHistory.removeAll { now.timeIntervalSince($0.timestamp) > windowDuration }
         
-        // Calcola l'intensità della frenata (0-1)
-        let normalizedDeceleration = min(max(decelerationRate / 30.0, 0), 1) // 30 km/h/s = frenata molto forte
+        // Controlla se c'è un valore più vecchio da confrontare
+        guard let oldest = speedHistory.first else { return }
+        
+        let deltaSpeed = oldest.speed - newSpeed
+        let timeDelta = now.timeIntervalSince(oldest.timestamp)
+        
+        // Evita divisioni per 0
+        guard timeDelta > 0.1 else { return }
+        
+        let decelerationRate = Double(deltaSpeed) / timeDelta
+        let normalizedDeceleration = min(max(decelerationRate / 30.0, 0), 1)
         
         DispatchQueue.main.async {
             self.brakingIntensity = normalizedDeceleration
         }
         
-        // Rileva frenata brusca
         if decelerationRate > speedDecelThreshold {
-            handleBrakingEvent(decelerationRate: decelerationRate, speed: newSpeed)
+            handleBrakingEvent(decelerationRate: decelerationRate, speed: newSpeed, vInitial: oldest.speed)
         }
-        
-        previousSpeed = newSpeed
-        lastUpdateTime = now
     }
     
-    private func handleBrakingEvent(decelerationRate: Double, speed: Int) {
+    private func handleBrakingEvent(decelerationRate: Double, speed: Int, vInitial: Int) {
         isBraking = true
 
         if brakingEvents.last == nil || Date().timeIntervalSince(brakingEvents.last!.timestamp) > 3 {
             // Conversione velocità da km/h a m/s
-            let vInitial = Double(previousSpeed) * 1000 / 3600
-            let vFinal = Double(speed) * 1000 / 3600
+            let vInitMS = Double(vInitial) * 1000 / 3600
+            let vFinalMS = Double(speed) * 1000 / 3600
             
-            // Stima massa del veicolo (es: 1300 kg)
             let mass = 1300.0
+            let deltaEk = 0.5 * mass * (vInitMS * vInitMS - vFinalMS * vFinalMS)
             
-            // Energia cinetica persa (Joule)
-            let deltaEk = 0.5 * mass * (vInitial * vInitial - vFinal * vFinal)
-            
-            // Potere calorifico benzina (circa 34 MJ/l), rendimento medio 25%
             let efficiency = 0.25
-            let energyPerLiter = 34_000_000.0 * efficiency // J/l
-
+            let energyPerLiter = 34_000_000.0 * efficiency
             let litersUsed = max(deltaEk / energyPerLiter, 0)
 
             let event = BrakingEvent(
@@ -117,7 +109,6 @@ class BrakingViewModel: ObservableObject {
         }
     }
 
-    
     func addLocationToLastEvent(_ location: CLLocation?, address: String) {
         guard !brakingEvents.isEmpty else { return }
         brakingEvents[brakingEvents.count - 1].location = location
