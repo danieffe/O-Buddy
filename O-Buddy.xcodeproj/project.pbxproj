@@ -6,22 +6,7 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXCopyFilesBuildPhase section */
-		7F8B99682DDCD614000A5AEE /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
-		7F8B994F2DDCD614000A5AEE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
-		7F8B99512DDCD614000A5AEE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		7F9A53ED2DD32DE300E12C5A /* O-Buddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "O-Buddy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -57,20 +42,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7F8B994E2DDCD614000A5AEE /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				7F8B994F2DDCD614000A5AEE /* WidgetKit.framework */,
-				7F8B99512DDCD614000A5AEE /* SwiftUI.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		7F9A53E42DD32DE300E12C5A = {
 			isa = PBXGroup;
 			children = (
 				7F9A53EF2DD32DE300E12C5A /* O-Buddy */,
-				7F8B994E2DDCD614000A5AEE /* Frameworks */,
 				7F9A53EE2DD32DE300E12C5A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -93,7 +68,6 @@
 				7F9A53E92DD32DE300E12C5A /* Sources */,
 				7F9A53EA2DD32DE300E12C5A /* Frameworks */,
 				7F9A53EB2DD32DE300E12C5A /* Resources */,
-				7F8B99682DDCD614000A5AEE /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -288,7 +262,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "O-Buddy/O-Buddy.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"O-Buddy/Preview Content\"";
@@ -322,7 +295,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "O-Buddy/O-Buddy.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"O-Buddy/Preview Content\"";
