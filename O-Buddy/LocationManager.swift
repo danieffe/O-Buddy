@@ -1,4 +1,9 @@
-LOCATION MANAGER
+//
+//  LocationManager.swift
+//  O-Buddy
+//
+//  Created by Stefano Nuzzo on 28/05/25.
+//
 
 import Foundation
 import CoreLocation

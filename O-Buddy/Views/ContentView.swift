@@ -1,4 +1,4 @@
-//
+
 //  ContentView.swift
 //  PROVAOBDService
 //
@@ -12,7 +12,13 @@ struct ContentView: View {
     @StateObject private var obdViewModel = OBDViewModel()
     @StateObject private var locationService = LocationService()
     @StateObject private var brakingViewModel: BrakingViewModel
-    
+    @StateObject private var locationManager = LocationManager()
+    @State private var stations: [FuelStation] = []
+    @State private var selectedFuel = "benzina"
+
+    private let fuelTypes = ["benzina", "gasolio", "gpl", "metano", "premium", "gasolio_plus"]
+    private let service = FuelPriceService()
+
     init() {
         let obdVM = OBDViewModel()
         _brakingViewModel = StateObject(
@@ -24,7 +30,12 @@ struct ContentView: View {
         )
         _obdViewModel = StateObject(wrappedValue: obdVM)
     }
-    
+
+    var averagePrice: Double {
+        let prices = stations.compactMap { Double($0.prezzo.replacingOccurrences(of: ",", with: ".")) }
+        return prices.isEmpty ? 0.0 : prices.reduce(0, +) / Double(prices.count)
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -35,7 +46,7 @@ struct ContentView: View {
                     protocolStatus: obdViewModel.protocolStatus,
                     adapterVersion: obdViewModel.adapterVersion
                 )
-                
+
                 // Dati veicolo
                 HStack(spacing: 20) {
                     DataPanel(
@@ -44,14 +55,14 @@ struct ContentView: View {
                         label: "Velocità",
                         color: .blue
                     )
-                    
+
                     DataPanel(
                         value: obdViewModel.rpm,
                         unit: "RPM",
                         label: "Giri Motore",
                         color: .orange
                     )
-                    
+
                     DataPanel(
                         value: obdViewModel.fuelPressure,
                         unit: "kPa",
@@ -60,22 +71,46 @@ struct ContentView: View {
                     )
                 }
                 .padding(.vertical, 8)
-                
+
                 // Indicatori frenata
                 VStack(spacing: 16) {
                     BrakingIndicatorView(viewModel: brakingViewModel)
-                    
                     BrakingIntensityView(intensity: brakingViewModel.brakingIntensity)
                 }
-                
+
+                // Sezione prezzo medio e costo stimato carburante
+                VStack(spacing: 8) {
+                    Picker("Tipo carburante", selection: $selectedFuel) {
+                        ForEach(fuelTypes, id: \.self) { fuel in
+                            Text(fuel.capitalized)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+
+                    if !stations.isEmpty {
+                        VStack(spacing: 4) {
+                            Text("Prezzo medio per \(selectedFuel): \(String(format: "%.3f €/L", averagePrice))")
+                            Text("Carburante consumato: \(String(format: "%.3f L", brakingViewModel.totalFuelUsed))")
+                            Text("Soldi sprecati: \(String(format: "%.2f €", brakingViewModel.totalFuelCost))")
+                                .bold()
+                                .foregroundColor(.red)
+                        }
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .cornerRadius(10)
+                    }
+                }
+                .onAppear { fetchData() }
+                .onChange(of: selectedFuel) { _ in fetchData() }
+
                 // Eventi di frenata
                 if !brakingViewModel.brakingEvents.isEmpty {
                     BrakingEventsListView(events: $brakingViewModel.brakingEvents)
                         .transition(.opacity)
                 }
-                
+
                 Divider()
-                
+
                 // Sezione debug
                 DebugSectionView(
                     lastCommand: obdViewModel.lastCommand,
@@ -94,6 +129,14 @@ struct ContentView: View {
             }
         }
     }
+
+    private func fetchData() {
+        guard let location = locationManager.location else { return }
+        service.fetchStations(lat: location.latitude, lon: location.longitude, fuelType: selectedFuel) {
+            stations = $0
+            brakingViewModel.fuelPrice = averagePrice
+        }
+    }
 }
 
 // MARK: - Subviews
@@ -103,14 +146,14 @@ struct ConnectionHeaderView: View {
     let status: String
     let protocolStatus: String
     let adapterVersion: String
-    
+
     var body: some View {
         VStack(spacing: 8) {
             HStack {
                 Circle()
                     .fill(isConnected ? Color.green : Color.red)
                     .frame(width: 12, height: 12)
-                
+
                 VStack(alignment: .leading) {
                     Text(isConnected ? "CONNESSO" : "DISCONNESSO")
                         .font(.headline)
@@ -118,7 +161,7 @@ struct ConnectionHeaderView: View {
                         .font(.caption2)
                 }
             }
-            
+
             Text("\(protocolStatus) • \(adapterVersion)")
                 .font(.caption2)
                 .foregroundColor(.gray)
@@ -132,13 +175,13 @@ struct DataPanel: View {
     let unit: String
     let label: String
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 4) {
             Text(label.uppercased())
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text("\(value)")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -156,18 +199,18 @@ struct DataPanel: View {
 
 struct BrakingIndicatorView: View {
     @ObservedObject var viewModel: BrakingViewModel
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Text("STATO FRENATA".uppercased())
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             HStack(spacing: 16) {
                 Image(systemName: viewModel.isBraking ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .font(.system(size: 28))
                     .foregroundColor(viewModel.isBraking ? .red : .green)
-                
+
                 VStack(alignment: .leading) {
                     Text(viewModel.isBraking ? "FRENATA RILEVATA" : "NORMALE")
                         .font(.subheadline)
@@ -187,25 +230,25 @@ struct BrakingIndicatorView: View {
 
 struct BrakingIntensityView: View {
     let intensity: Double
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Text("INTENSITÀ FRENATA".uppercased())
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             ZStack {
                 Circle()
                     .stroke(lineWidth: 10)
                     .opacity(0.3)
                     .foregroundColor(.gray)
-                
+
                 Circle()
                     .trim(from: 0, to: CGFloat(intensity))
                     .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .foregroundColor(intensity > 0.7 ? .red : (intensity > 0.4 ? .orange : .green))
                     .rotationEffect(Angle(degrees: -90))
-                
+
                 VStack {
                     Text(String(format: "%.0f%%", intensity * 100))
                         .font(.system(size: 20, weight: .bold))
@@ -222,39 +265,39 @@ struct BrakingIntensityView: View {
 
 struct BrakingEventsListView: View {
     @Binding var events: [BrakingEvent]
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("EVENTI DI FRENATA BRUSCA".uppercased())
                     .font(.caption)
                     .foregroundColor(.secondary)
-                
+
                 Spacer()
-                
+
                 Text("\(events.count) eventi")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal)
-            
+
             ForEach(events.reversed()) { event in
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.red)
-                        
+
                         Text(event.timestamp.formatted(date: .omitted, time: .standard))
                             .font(.subheadline)
                             .bold()
-                        
+
                         Spacer()
-                        
+
                         Text(String(format: "%.1f km/h/s", event.deceleration))
                             .foregroundColor(.red)
                             .bold()
                     }
-                    
+
                     if !event.address.isEmpty {
                         HStack {
                             Image(systemName: "mappin.and.ellipse")
@@ -263,7 +306,7 @@ struct BrakingEventsListView: View {
                         }
                         .foregroundColor(.secondary)
                     }
-                    
+
                     if let speed = event.speed {
                         HStack {
                             Image(systemName: "speedometer")
@@ -272,20 +315,19 @@ struct BrakingEventsListView: View {
                         }
                         .foregroundColor(.secondary)
                     }
-                    
+
                     HStack {
                         Image(systemName: "gauge.with.dots.needle.50percent")
                         Text("Intensità: \(String(format: "%.0f", event.intensity * 100))%")
                             .font(.caption)
                     }
                     .foregroundColor(.secondary)
+
                     HStack {
                         Image(systemName: "drop.fill")
                         Text(String(format: "Carburante stimato: %.3f L", event.fuelUsedLiters))
                             .font(.caption)
                     }
-                   
-
                     .foregroundColor(.secondary)
                 }
                 .padding()
@@ -301,19 +343,19 @@ struct DebugSectionView: View {
     let lastCommand: String
     let rawResponse: String
     let cleanedResponse: String
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("DEBUG OBD".uppercased())
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .padding(.bottom, 4)
-            
+
             Group {
                 Text("Ultimo comando inviato:")
                     .font(.caption)
                     .foregroundColor(.gray)
-                
+
                 Text(lastCommand)
                     .font(.system(.body, design: .monospaced))
                     .textSelection(.enabled)
@@ -322,12 +364,12 @@ struct DebugSectionView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(6)
             }
-            
+
             Group {
                 Text("Risposta grezza:")
                     .font(.caption)
                     .foregroundColor(.gray)
-                
+
                 ScrollView(.vertical, showsIndicators: true) {
                     Text(rawResponse)
                         .font(.system(.caption, design: .monospaced))
@@ -339,12 +381,12 @@ struct DebugSectionView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(6)
             }
-            
+
             Group {
                 Text("Risposta elaborata:")
                     .font(.caption)
                     .foregroundColor(.gray)
-                
+
                 ScrollView(.vertical, showsIndicators: true) {
                     Text(cleanedResponse)
                         .font(.system(.caption, design: .monospaced))
@@ -359,10 +401,4 @@ struct DebugSectionView: View {
         }
         .padding(.top, 8)
     }
-}
-
-// MARK: - Preview
-
-#Preview{
-    ContentView()
 }
