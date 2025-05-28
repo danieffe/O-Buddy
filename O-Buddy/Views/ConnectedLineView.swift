@@ -43,11 +43,29 @@ struct ConnectedLineView: View {
                     )
             }
             .onAppear {
-                // Calcolo dell'altezza finale della linea spostato qui
                 let circleCenterY = geo.size.height / 2 + verticalOffset
                 let circleBottomY = circleCenterY + (circleSize / 2)
                 let finalHeight = geo.size.height - circleBottomY + lineOverlap
                 animatedLineHeight = finalHeight
+            }
+            .overlay(alignment: .top) {
+                HStack {
+                    NavigationLink(destination: SettingView()) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 40))
+                            .padding()
+                            .foregroundColor(.black)
+                    }
+
+                    Spacer()
+
+                    NavigationLink(destination: CalendarView()) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 40))
+                            .padding()
+                            .foregroundColor(.black)
+                    }
+                }
             }
         }
     }
@@ -55,6 +73,8 @@ struct ConnectedLineView: View {
 
 struct ConnectedLineView_Previews: PreviewProvider {
     static var previews: some View {
-        ConnectedLineView()
+        NavigationView {
+            ConnectedLineView()
+        }
     }
 }

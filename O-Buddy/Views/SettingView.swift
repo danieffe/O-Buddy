@@ -5,14 +5,31 @@
 //  Created by Simone Di Blasi on 27/05/25.
 //
 
+
 import SwiftUI
 
 struct SettingView: View {
+    @State private var isDarkModeOn = false
+    @State private var notificationsEnabled = true
+    @State private var useCellularData = false
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationView {
+            Form {
+                Section(header: Text("Preferenze")) {
+                    Toggle("Modalità Scura", isOn: $isDarkModeOn)
+                    Toggle("Notifiche", isOn: $notificationsEnabled)
+                    Toggle("Usa Dati Cellulare", isOn: $useCellularData)
+                }
+            }
+            .navigationTitle("Impostazioni")
+        }
     }
 }
 
-#Preview {
-    SettingView()
+struct SettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingView()
+    }
 }
+
