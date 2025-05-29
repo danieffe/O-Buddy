@@ -129,32 +129,6 @@ struct MainView: View {
                     //     // ADD: Animation for opacity
                     //     .animation(.easeIn(duration: 1.0), value: showHollowCircles)
 
-                    // ADD: Dynamically generated circles for braking events
-                    ForEach(brakingViewModel.brakingEvents.indexed(), id: \.1.id) { index, event in
-                        Circle()
-                            .stroke(Color.black, lineWidth: eventCircleStrokeWidth)
-                            .fill(Color.white)
-                            .frame(width: eventCircleSize, height: eventCircleSize)
-                            .position(
-                                x: geo.size.width / 2,
-                                y: circleCenterY + initialEventCircleOffset + (CGFloat(index) * eventCircleVerticalSpacing)
-                            )
-                            .opacity(0) // Initial opacity for animation
-                            .animation(.easeIn(duration: 0.5).delay(Double(index) * 0.1), value: 1) // ADD: Animation for appearance
-                            .onAppear {
-                                // Animate to visible when added
-                                DispatchQueue.main.async { // Ensure this runs on main thread
-                                    // This won't work directly with .opacity(0) and .animation() on a ForEach item.
-                                    // The opacity needs to be bound to a state variable for each item or managed differently.
-                                    // For simplicity, we'll let the ForEach handle immediate appearance as items are added.
-                                    // If a fade-in animation is strictly needed per item, each item needs its own @State.
-                                    // For now, they will just appear as they are added to the array.
-                                    // A common pattern for animate-on-add is to have a @State for opacity within a custom view for each circle.
-                                }
-                            }
-                            .transition(.scale) // ADD: Transition for new circles appearing
-                    }
-
                     // ADD: Aggressive drive text (always visible)
                     Text("Aggressive drive")
                         .foregroundColor(.black)
@@ -193,6 +167,47 @@ struct MainView: View {
                             .foregroundColor(.black)
                     }
                     .position(x: geo.size.width - iconPadding - iconSize / 2, y: iconPadding + iconSize / 2)
+
+                    // ADD: Scrollable content for the line and braking events
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 0) { // VStack to stack line and circles
+                            // ADD: Spacer to position the first event circle
+                            let topPaddingForScrollViewContent = initialEventCircleOffset - (circleSize / 2) + lineOverlap
+                            if topPaddingForScrollViewContent > 0 {
+                                Spacer(minLength: topPaddingForScrollViewContent)
+                            }
+
+                            // REMOVE: Line definition moved inside ScrollView's VStack
+                            // Rectangle()
+                            //     .fill(Color.black)
+                            //     // REMOVE: ignoresSafeArea() from Rectangle
+                            //     .frame(width: 15, height: contentHeight) // Height adjusts dynamically
+                            //     // ADD: Overlay for dynamic circles on the line
+                            //     .overlay(
+                                    ZStack {
+                                        ForEach(brakingViewModel.brakingEvents.indexed(), id: \.1.id) { index, event in
+                                            // CHANGE: Calculate displayIndex to show newest events at the top
+                                            let numberOfEvents = brakingViewModel.brakingEvents.count // ADD: Recalculate numberOfEvents
+                                            let displayIndex = numberOfEvents - 1 - index
+                                            
+                                            Circle()
+                                                .stroke(Color.black, lineWidth: eventCircleStrokeWidth)
+                                                .fill(Color.white)
+                                                .frame(width: eventCircleSize, height: eventCircleSize)
+                                                // CHANGE: Position circles relative to the line's top, using displayIndex
+                                                .offset(y: CGFloat(displayIndex) * eventCircleVerticalSpacing)
+                                                // REMOVE: Initial opacity(0) and its animation
+                                                .transition(.scale) // Transition for new circles appearing
+                                        }
+                                    }
+                                // )
+                        }
+                        // CHANGE: Ensure VStack takes full width to center its content horizontally
+                        .frame(width: geo.size.width)
+                    }
+                    // CHANGE: Position and frame the ScrollView to start below the central circle
+                    .frame(height: geo.size.height - (circleBottomY - lineOverlap)) // Set height of ScrollView
+                    .position(x: geo.size.width / 2, y: (circleBottomY - lineOverlap) + (geo.size.height - (circleBottomY - lineOverlap)) / 2) // Center the ScrollView vertically in its available space
                 }
                 .onAppear {
                     // Calcolo dell'altezza finale della linea spostato qui

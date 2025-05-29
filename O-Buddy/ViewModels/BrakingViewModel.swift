@@ -22,7 +22,7 @@ class BrakingViewModel: ObservableObject {
     private var lastUpdateTime = Date()
     
     // Soglie di rilevamento
-    private let speedDecelThreshold = 15.0 // km/h/s
+    private let speedDecelThreshold = 10.0 // km/h/s
     private let rpmDropThreshold = 500 // RPM/s
     private let fuelPressureThreshold = 20 // Unità/s
     
