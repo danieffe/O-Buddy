@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreLocation
 
-struct ContentView: View {
+struct PrototypeView: View {
     @StateObject private var obdViewModel = OBDViewModel()
     @StateObject private var locationService = LocationService()
     @StateObject private var brakingViewModel: BrakingViewModel
@@ -373,5 +373,5 @@ struct DebugSectionView: View {
 // MARK: - Preview
 
 #Preview{
-    ContentView()
+    PrototypeView()
 }

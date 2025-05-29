@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct PROVAOBDServiceApp: App {
+struct OBuddyApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()
