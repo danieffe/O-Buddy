@@ -9,5 +9,9 @@
 		<string>remote-notification</string>
 		<string>processing</string>
 	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(com.danielefontana.O-Buddy).backgroundRefresh</string>
+	</array>
 </dict>
 </plist>
