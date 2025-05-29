@@ -1,4 +1,3 @@
-
 import Foundation
 import CoreLocation
 import Combine
@@ -17,14 +16,11 @@ class BrakingViewModel: ObservableObject {
     private var previousRPM: Int = 0
     private var previousFuelPressure: Int = 0
     private var lastUpdateTime = Date()
-
     private var speedHistory: [SpeedSample] = []
-
-    private let speedDecelThreshold = 15.0
+    private let speedDecelThreshold = 10.0
     private let rpmDropThreshold = 500
     private let fuelPressureThreshold = 20
     private let windowDuration: TimeInterval = 3.0
-
     private var cancellables = Set<AnyCancellable>()
 
     init(speedPublisher: Published<Int>.Publisher,
@@ -55,7 +51,7 @@ class BrakingViewModel: ObservableObject {
     }
 
     var totalFuelCost: Double {
-        totalFuelUsed * fuelPrice
+        brakingEvents.map(\.fuelCost).reduce(0, +)
     }
 
     private func checkBrakingParameters(newSpeed: Int) {
@@ -93,13 +89,15 @@ class BrakingViewModel: ObservableObject {
             let efficiency = 0.25
             let energyPerLiter = 34_000_000.0 * efficiency
             let litersUsed = max(deltaEk / energyPerLiter, 0)
+            let cost = litersUsed * fuelPrice
 
             let event = BrakingEvent(
                 timestamp: Date(),
                 deceleration: decelerationRate,
                 speed: speed,
                 intensity: brakingIntensity,
-                fuelUsedLiters: litersUsed
+                fuelUsedLiters: litersUsed,
+                fuelCost: cost
             )
             brakingEvents.append(event)
         }

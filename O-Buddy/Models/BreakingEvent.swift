@@ -1,13 +1,5 @@
-//
-//  BreakingEvent.swift
-//  PROVAOBDService
-//
-//  Created by Daniele Fontana on 17/05/25.
-//
-
 import Foundation
 import CoreLocation
-
 
 struct BrakingEvent: Identifiable {
     let id = UUID()
@@ -18,6 +10,7 @@ struct BrakingEvent: Identifiable {
     var location: CLLocation?
     var address: String = ""
     var fuelUsedLiters: Double = 0
+    var fuelCost: Double = 0.0
 }
 
 struct FuelStation: Identifiable {
