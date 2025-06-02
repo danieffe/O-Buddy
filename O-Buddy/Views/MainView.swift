@@ -176,7 +176,8 @@ struct MainView: View {
                                             .padding(.horizontal, 10)
                                             .padding(.vertical, 8)
                                             .offset(x: geo.size.width / 2 - geo.size.width / 2 + 100, y: CGFloat(index) * eventCircleVerticalSpacing)
-                                            .transition(.opacity)
+                                            .transition(.scale.combined(with: .opacity).animation(.easeInOut(duration: 0.3)))
+
                                         }
                                     }
                                     .onTapGesture {
