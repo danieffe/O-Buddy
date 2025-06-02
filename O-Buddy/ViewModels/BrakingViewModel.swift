@@ -28,12 +28,20 @@ class BrakingViewModel: ObservableObject {
     private let windowDuration: TimeInterval = 3.0
     private var cancellables = Set<AnyCancellable>()
 
-    // ADD: Track the ID of the currently active braking event for updating speedAtReturn
+    // Track the ID of the currently active braking event for updating speedAtReturn
     private var activeBrakingEventId: UUID?
+    // LocationManager instance to access current location
+    private var locationManager: LocationManager
+    // CLGeocoder instance for reverse geocoding
+    private let geocoder = CLGeocoder()
+
 
     init(speedPublisher: Published<Int>.Publisher,
          rpmPublisher: Published<Int>.Publisher,
-         fuelPressurePublisher: Published<Int>.Publisher) {
+         fuelPressurePublisher: Published<Int>.Publisher,
+         locationManager: LocationManager = LocationManager()) { // Default value for previews/testing
+        
+        self.locationManager = locationManager // Store the passed LocationManager
         
         speedPublisher
             .sink { [weak self] newSpeed in
@@ -93,7 +101,7 @@ class BrakingViewModel: ObservableObject {
             // A hard braking event is detected
             handleBrakingEvent(decelerationRate: decelerationRate, speed: newSpeed, vInitial: oldest.speed)
         } else if let activeId = activeBrakingEventId, decelerationRate <= speedDecelThreshold {
-            // ADD: If hard braking has stopped and there's an active event, update speedAtReturn
+            // If hard braking has stopped and there's an active event, update speedAtReturn
             if let index = brakingEvents.firstIndex(where: { $0.id == activeId }) {
                 brakingEvents[index].speedAtReturn = newSpeed
                 print("DEBUG: Braking event \(activeId) speedAtReturn updated to \(newSpeed) km/h")
@@ -108,7 +116,7 @@ class BrakingViewModel: ObservableObject {
     private func handleBrakingEvent(decelerationRate: Double, speed: Int, vInitial: Int) {
         isBraking = true
         
-        // CHANGE: Only create a new event if sufficient time has passed or no events exist
+        // Only create a new event if sufficient time has passed or no events exist
         if brakingEvents.last == nil || Date().timeIntervalSince(brakingEvents.last!.timestamp) > 3 {
             let vInitMS = Double(vInitial) * 1000 / 3600
             let vFinalMS = Double(speed) * 1000 / 3600
@@ -133,7 +141,7 @@ class BrakingViewModel: ObservableObject {
             print("fuelCost: \(cost) €")
             print("---------------------------------")
 
-            let event = BrakingEvent(
+            var event = BrakingEvent(
                 timestamp: Date(),
                 deceleration: decelerationRate,
                 speed: speed,
@@ -142,8 +150,32 @@ class BrakingViewModel: ObservableObject {
                 fuelCost: cost,
                 speedAtReturn: nil // This will be updated in checkBrakingParameters when deceleration stops
             )
+            
+            // Capture location and geocode
+            if let currentLocation = locationManager.location {
+                event.location = currentLocation
+                geocoder.reverseGeocodeLocation(currentLocation) { [weak self] (placemarks, error) in
+                    guard let self = self else { return }
+                    if let placemark = placemarks?.first {
+                        let addressString = [
+                            placemark.thoroughfare,
+                            placemark.subThoroughfare,
+                            placemark.locality,
+                            placemark.country
+                        ].compactMap { $0 }.joined(separator: ", ")
+                        
+                        if let index = self.brakingEvents.firstIndex(where: { $0.id == event.id }) {
+                            self.brakingEvents[index].address = addressString
+                            print("DEBUG: Braking event \(event.id) address updated to \(addressString)")
+                        }
+                    } else if let error = error {
+                        print("DEBUG: Geocoding failed with error: \(error.localizedDescription)")
+                    }
+                }
+            }
+            
             brakingEvents.append(event)
-            // ADD: Set the newly created event as the active one
+            // Set the newly created event as the active one
             activeBrakingEventId = event.id
         }
         
@@ -158,4 +190,3 @@ class BrakingViewModel: ObservableObject {
         brakingEvents[brakingEvents.count - 1].address = address
     }
 }
-// End of file. No additional code.

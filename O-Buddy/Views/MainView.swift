@@ -20,7 +20,7 @@ struct MainView: View {
     let eventCircleStrokeWidth: CGFloat = 25
     let initialEventCircleOffset: CGFloat = 90
     let eventCircleVerticalSpacing: CGFloat = 70
-    let eventCircleNonExpandedStrokeWidth: CGFloat = 10 
+    let eventCircleNonExpandedStrokeWidth: CGFloat = 10
 
 
     let iconSize: CGFloat = 30
@@ -28,7 +28,7 @@ struct MainView: View {
 
     @StateObject private var obdViewModel: OBDViewModel
     @StateObject private var brakingViewModel: BrakingViewModel
-    @StateObject private var locationManager = LocationManager()
+    @StateObject private var locationManager = LocationManager() // Kept as StateObject here
     @State private var stations: [FuelStation] = []
     @State private var selectedFuel = "gasolio"
 
@@ -42,11 +42,15 @@ struct MainView: View {
         if let existingBrakingViewModel = brakingViewModel {
             bvm = existingBrakingViewModel
         } else {
+            // Pass locationManager instance to BrakingViewModel during initialization
+            let newLocationManager = LocationManager()
             bvm = BrakingViewModel(
                 speedPublisher: obdViewModel.$speed,
                 rpmPublisher: obdViewModel.$rpm,
-                fuelPressurePublisher: obdViewModel.$fuelPressure
+                fuelPressurePublisher: obdViewModel.$fuelPressure,
+                locationManager: newLocationManager // Pass the locationManager here
             )
+            _locationManager = StateObject(wrappedValue: newLocationManager) // Initialize _locationManager
         }
         _brakingViewModel = StateObject(wrappedValue: bvm)
     }
@@ -144,44 +148,65 @@ struct MainView: View {
                                             .stroke(Color.black, lineWidth: eventCircleNonExpandedStrokeWidth)
                                             .frame(width: eventCircleSize, height: eventCircleSize)
                                             .offset(y: CGFloat(index) * eventCircleVerticalSpacing)
-                                            .transition(.scale)
-                                        
-                                        if isExpanded {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text("Hard Brake")
-                                                    .font(.subheadline)
-                                                    .fontWeight(.bold)
-                                                Text("Speed at stop")
-                                                    .font(.caption)
-                                                Text("\(event.speed ?? 0) km/h")
-                                                    .font(.caption)
-                                                    .fontWeight(.bold)
-                                                Text("Speed at return")
-                                                    .font(.caption)
-                                                Text(event.speedAtReturn != nil ? "\(event.speedAtReturn!) km/h" : "N/A")
-                                                    .font(.caption)
-                                                    .fontWeight(.bold)
-                                                Text("RPM lost")
-                                                    .font(.caption)
-                                                Text(String(format: "%.2f", event.intensity))
-                                                    .font(.caption)
-                                                    .fontWeight(.bold)
-                                                Text("Gasoline Consumption")
-                                                    .font(.caption)
-                                                Text(String(format: "%.2f €", event.fuelCost))
-                                                    .font(.caption)
-                                                    .fontWeight(.bold)
-                                                    .foregroundColor(.red)
-                                            }
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 8)
-                                            .offset(x: geo.size.width / 2 - geo.size.width / 2 + 100, y: CGFloat(index) * eventCircleVerticalSpacing)
-                                            .transition(.scale.combined(with: .opacity).animation(.easeInOut(duration: 0.3)))
-
-                                        }
+                                            // ADD: Animation for the circle's position changes
+                                            .animation(.easeInOut(duration: 1.0), value: index) // Animates movement based on index change
                                     }
                                     .onTapGesture {
                                         brakingViewModel.toggleEventExpansion(for: event.id)
+                                    }
+                                    
+                                    if isExpanded {
+                                        // ADD: Left side details (Date, Address)
+                                        VStack(alignment: .trailing, spacing: 4) {
+                                            Text(event.timestamp, format: .dateTime.day().month(.abbreviated).year())
+                                                .font(.caption)
+                                                .fontWeight(.bold)
+                                                .padding(.bottom, 4)
+
+                                            Text(event.address ?? "Indirizzo non disponibile")
+                                                .font(.caption)
+                                                .fontWeight(.regular)
+                                                .multilineTextAlignment(.trailing) // Align text to the right within its own frame
+                                                .padding(.top, 4)
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 8)
+                                        .offset(x: geo.size.width / 2 - geo.size.width / 2 - 100, y: CGFloat(index) * eventCircleVerticalSpacing) // Adjusted X offset for left side
+                                        .transition(.scale.combined(with: .opacity).animation(.easeInOut(duration: 0.3)))
+
+                                        // CHANGE: Right side details (technical info)
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            // REMOVE: Display Date of braking event (moved to left)
+                                            Text("Hard Brake")
+                                                .font(.subheadline)
+                                                .fontWeight(.bold)
+                                            Text("Speed at stop")
+                                                .font(.caption)
+                                            Text("\(event.speed ?? 0) km/h")
+                                                .font(.caption)
+                                                .fontWeight(.bold)
+                                            Text("Speed at return")
+                                                .font(.caption)
+                                            Text(event.speedAtReturn != nil ? "\(event.speedAtReturn!) km/h" : "N/A")
+                                                .font(.caption)
+                                                .fontWeight(.bold)
+                                            Text("RPM lost")
+                                                .font(.caption)
+                                            Text(String(format: "%.2f", event.intensity))
+                                                .font(.caption)
+                                                .fontWeight(.bold)
+                                            Text("Gasoline Consumption")
+                                                .font(.caption)
+                                            Text(String(format: "%.2f €", event.fuelCost))
+                                                .font(.caption)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.red)
+                                            // REMOVE: Display Address of braking event (moved to left)
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 8)
+                                        .offset(x: geo.size.width / 2 - geo.size.width / 2 + 100, y: CGFloat(index) * eventCircleVerticalSpacing) // Original X offset for right side
+                                        .transition(.scale.combined(with: .opacity).animation(.easeInOut(duration: 0.3)))
                                     }
                                 }
                             }
@@ -242,16 +267,17 @@ struct MainView_Previews: PreviewProvider {
     }
 
     class MockBrakingViewModel: BrakingViewModel {
-        override init(speedPublisher: Published<Int>.Publisher, rpmPublisher: Published<Int>.Publisher, fuelPressurePublisher: Published<Int>.Publisher) {
-            super.init(speedPublisher: speedPublisher, rpmPublisher: rpmPublisher, fuelPressurePublisher: fuelPressurePublisher)
+        override init(speedPublisher: Published<Int>.Publisher, rpmPublisher: Published<Int>.Publisher, fuelPressurePublisher: Published<Int>.Publisher, locationManager: LocationManager = LocationManager()) {
+            super.init(speedPublisher: speedPublisher, rpmPublisher: rpmPublisher, fuelPressurePublisher: fuelPressurePublisher, locationManager: locationManager)
             
             // Populate with sample braking events
             self.brakingEvents = [
-                BrakingEvent(timestamp: Date().addingTimeInterval(-30), deceleration: 20.0, speed: 50, intensity: 0.8, fuelUsedLiters: 0.05, fuelCost: 0.08, speedAtReturn: 5),
-                BrakingEvent(timestamp: Date().addingTimeInterval(-60), deceleration: 15.0, speed: 60, intensity: 0.6, fuelUsedLiters: 0.03, fuelCost: 0.05, speedAtReturn: 10),
-                BrakingEvent(timestamp: Date().addingTimeInterval(-90), deceleration: 25.0, speed: 40, intensity: 0.9, fuelUsedLiters: 0.07, fuelCost: 0.12, speedAtReturn: 8),
-                BrakingEvent(timestamp: Date().addingTimeInterval(-120), deceleration: 12.0, speed: 70, intensity: 0.5, fuelUsedLiters: 0.02, fuelCost: 0.03, speedAtReturn: nil),
-                BrakingEvent(timestamp: Date().addingTimeInterval(-150), deceleration: 18.0, speed: 55, intensity: 0.7, fuelUsedLiters: 0.04, fuelCost: 0.07, speedAtReturn: 15)
+                // CHANGE: Reorder arguments in BrakingEvent initializer to match compiler's expected order (location before fuelUsedLiters)
+                BrakingEvent(timestamp: Date().addingTimeInterval(-30), deceleration: 20.0, speed: 50, intensity: 0.8, location: CLLocation(latitude: 40.7128, longitude: -74.0060), address: "Via Roma, 1, Napoli", fuelUsedLiters: 0.05, fuelCost: 0.08, speedAtReturn: 5),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-60), deceleration: 15.0, speed: 60, intensity: 0.6, location: CLLocation(latitude: 41.9028, longitude: 12.4964), address: "Piazza Navona, Roma", fuelUsedLiters: 0.03, fuelCost: 0.05, speedAtReturn: 10),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-90), deceleration: 25.0, speed: 40, intensity: 0.9, location: CLLocation(latitude: 45.4642, longitude: 9.1900), address: "Duomo, Milano", fuelUsedLiters: 0.07, fuelCost: 0.12, speedAtReturn: 8),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-120), deceleration: 12.0, speed: 70, intensity: 0.5, location: CLLocation(latitude: 40.8518, longitude: 14.2681), address: "Napoli Centrale", fuelUsedLiters: 0.02, fuelCost: 0.03, speedAtReturn: nil),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-150), deceleration: 18.0, speed: 55, intensity: 0.7, location: CLLocation(latitude: 40.7128, longitude: -74.0060), address: "New York, USA", fuelUsedLiters: 0.04, fuelCost: 0.07, speedAtReturn: 15)
             ]
             self.fuelPrice = 1.80 // Set a sample fuel price for calculations in preview
             self.expandedEventId = self.brakingEvents.first?.id
@@ -260,10 +286,12 @@ struct MainView_Previews: PreviewProvider {
 
     static var previews: some View {
         let mockOBD = MockOBDViewModel()
+        let mockLocationManager = LocationManager() // Create a mock LocationManager
         let mockBraking = MockBrakingViewModel(
             speedPublisher: mockOBD.$speed,
             rpmPublisher: mockOBD.$rpm,
-            fuelPressurePublisher: mockOBD.$fuelPressure
+            fuelPressurePublisher: mockOBD.$fuelPressure,
+            locationManager: mockLocationManager // Pass the mock LocationManager
         )
         MainView(obdViewModel: mockOBD, brakingViewModel: mockBraking)
     }
