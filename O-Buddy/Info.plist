@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(com.danielefontana.O-Buddy).backgroundRefresh</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
@@ -9,12 +13,5 @@
 		<string>remote-notification</string>
 		<string>processing</string>
 	</array>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>$(com.danielefontana.O-Buddy).backgroundRefresh</string>
-	</array>
-	<!-- ADD: Privacy - Location When In Use Usage Description -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is used to find nearby fuel stations and calculate fuel consumption during braking events.</string>
 </dict>
 </plist>

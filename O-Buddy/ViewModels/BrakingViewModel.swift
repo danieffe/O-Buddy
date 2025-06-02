@@ -14,7 +14,8 @@ class BrakingViewModel: ObservableObject {
     @Published var brakingEvents: [BrakingEvent] = []
     @Published var isBraking = false
     @Published var brakingIntensity: Double = 0
-    @Published var fuelPrice: Double = 0.0 // ADD: Make fuelPrice public so it can be set by MainViewModel
+    @Published var fuelPrice: Double = 0.0
+    @Published var expandedEventId: UUID?
 
     private var previousSpeed: Int = 0
     private var previousRPM: Int = 0
@@ -27,6 +28,8 @@ class BrakingViewModel: ObservableObject {
     private let windowDuration: TimeInterval = 3.0
     private var cancellables = Set<AnyCancellable>()
 
+    // ADD: Track the ID of the currently active braking event for updating speedAtReturn
+    private var activeBrakingEventId: UUID?
 
     init(speedPublisher: Published<Int>.Publisher,
          rpmPublisher: Published<Int>.Publisher,
@@ -59,6 +62,13 @@ class BrakingViewModel: ObservableObject {
         brakingEvents.map(\.fuelCost).reduce(0, +)
     }
 
+    func toggleEventExpansion(for id: UUID) {
+        if expandedEventId == id {
+            expandedEventId = nil
+        } else {
+            expandedEventId = id
+        }
+    }
 
     private func checkBrakingParameters(newSpeed: Int) {
         let now = Date()
@@ -80,7 +90,15 @@ class BrakingViewModel: ObservableObject {
         }
         
         if decelerationRate > speedDecelThreshold {
+            // A hard braking event is detected
             handleBrakingEvent(decelerationRate: decelerationRate, speed: newSpeed, vInitial: oldest.speed)
+        } else if let activeId = activeBrakingEventId, decelerationRate <= speedDecelThreshold {
+            // ADD: If hard braking has stopped and there's an active event, update speedAtReturn
+            if let index = brakingEvents.firstIndex(where: { $0.id == activeId }) {
+                brakingEvents[index].speedAtReturn = newSpeed
+                print("DEBUG: Braking event \(activeId) speedAtReturn updated to \(newSpeed) km/h")
+            }
+            activeBrakingEventId = nil // Clear the active event ID
         }
         
         previousSpeed = newSpeed
@@ -90,11 +108,11 @@ class BrakingViewModel: ObservableObject {
     private func handleBrakingEvent(decelerationRate: Double, speed: Int, vInitial: Int) {
         isBraking = true
         
+        // CHANGE: Only create a new event if sufficient time has passed or no events exist
         if brakingEvents.last == nil || Date().timeIntervalSince(brakingEvents.last!.timestamp) > 3 {
             let vInitMS = Double(vInitial) * 1000 / 3600
             let vFinalMS = Double(speed) * 1000 / 3600
             
-            // ADD: Debug prints for kinetic energy calculation
             print("--- Braking Event Calculation ---")
             print("fuelPrice: \(fuelPrice) €/L")
             print("vInitial (km/h): \(vInitial), vFinal (km/h): \(speed)")
@@ -121,9 +139,12 @@ class BrakingViewModel: ObservableObject {
                 speed: speed,
                 intensity: brakingIntensity,
                 fuelUsedLiters: litersUsed,
-                fuelCost: cost
+                fuelCost: cost,
+                speedAtReturn: nil // This will be updated in checkBrakingParameters when deceleration stops
             )
             brakingEvents.append(event)
+            // ADD: Set the newly created event as the active one
+            activeBrakingEventId = event.id
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

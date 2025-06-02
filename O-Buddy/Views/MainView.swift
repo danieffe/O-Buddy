@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Combine
-import CoreLocation 
+import CoreLocation
 
 struct MainView: View {
     let circleSize: CGFloat = 40
@@ -20,6 +20,8 @@ struct MainView: View {
     let eventCircleStrokeWidth: CGFloat = 25
     let initialEventCircleOffset: CGFloat = 90
     let eventCircleVerticalSpacing: CGFloat = 70
+    let eventCircleNonExpandedStrokeWidth: CGFloat = 10 
+
 
     let iconSize: CGFloat = 30
     let iconPadding: CGFloat = 20
@@ -33,16 +35,20 @@ struct MainView: View {
     private let fuelTypes = ["benzina", "gasolio", "gpl", "metano", "premium", "gasolio_plus"]
     private let service = FuelPriceService()
 
-    init() {
-        let obdVM = OBDViewModel()
-        _obdViewModel = StateObject(wrappedValue: obdVM)
-        _brakingViewModel = StateObject(
-            wrappedValue: BrakingViewModel(
-                speedPublisher: obdVM.$speed,
-                rpmPublisher: obdVM.$rpm,
-                fuelPressurePublisher: obdVM.$fuelPressure
+    init(obdViewModel: OBDViewModel = OBDViewModel(), brakingViewModel: BrakingViewModel? = nil) {
+        _obdViewModel = StateObject(wrappedValue: obdViewModel)
+        
+        let bvm: BrakingViewModel
+        if let existingBrakingViewModel = brakingViewModel {
+            bvm = existingBrakingViewModel
+        } else {
+            bvm = BrakingViewModel(
+                speedPublisher: obdViewModel.$speed,
+                rpmPublisher: obdViewModel.$rpm,
+                fuelPressurePublisher: obdViewModel.$fuelPressure
             )
-        )
+        }
+        _brakingViewModel = StateObject(wrappedValue: bvm)
     }
 
     var averagePrice: Double {
@@ -131,15 +137,16 @@ struct MainView: View {
 
                             ZStack {
                                 ForEach(brakingViewModel.brakingEvents.enumerated().reversed(), id: \.element.id) { index, event in
+                                    let isExpanded = brakingViewModel.expandedEventId == event.id
                                     Group {
                                         Circle()
-                                            .fill(event.isExpanded ? Color.black : Color.white)
-                                            .stroke(Color.black, lineWidth: eventCircleStrokeWidth)
+                                            .fill(isExpanded ? Color.black : Color.white)
+                                            .stroke(Color.black, lineWidth: eventCircleNonExpandedStrokeWidth)
                                             .frame(width: eventCircleSize, height: eventCircleSize)
                                             .offset(y: CGFloat(index) * eventCircleVerticalSpacing)
                                             .transition(.scale)
                                         
-                                        if event.isExpanded {
+                                        if isExpanded {
                                             VStack(alignment: .leading, spacing: 4) {
                                                 Text("Hard Brake")
                                                     .font(.subheadline)
@@ -151,12 +158,12 @@ struct MainView: View {
                                                     .fontWeight(.bold)
                                                 Text("Speed at return")
                                                     .font(.caption)
-                                                Text("7km/h") // Placeholder
+                                                Text(event.speedAtReturn != nil ? "\(event.speedAtReturn!) km/h" : "N/A")
                                                     .font(.caption)
                                                     .fontWeight(.bold)
                                                 Text("RPM lost")
                                                     .font(.caption)
-                                                Text("1.02") // Placeholder
+                                                Text(String(format: "%.2f", event.intensity))
                                                     .font(.caption)
                                                     .fontWeight(.bold)
                                                 Text("Gasoline Consumption")
@@ -168,15 +175,12 @@ struct MainView: View {
                                             }
                                             .padding(.horizontal, 10)
                                             .padding(.vertical, 8)
-                                            .background(Color.white.opacity(0.9))
-                                            .cornerRadius(8)
-                                            .shadow(radius: 3)
                                             .offset(x: geo.size.width / 2 - geo.size.width / 2 + 100, y: CGFloat(index) * eventCircleVerticalSpacing)
                                             .transition(.opacity)
                                         }
                                     }
                                     .onTapGesture {
-                                        brakingViewModel.brakingEvents[index].isExpanded.toggle()
+                                        brakingViewModel.toggleEventExpansion(for: event.id)
                                     }
                                 }
                             }
@@ -191,7 +195,7 @@ struct MainView: View {
                     // Removed fetchData() from onAppear
                 }
                 .onChange(of: locationManager.location) { newLocation in
-                    if newLocation != nil { 
+                    if newLocation != nil {
                         fetchData()
                     }
                 }
@@ -225,7 +229,41 @@ extension RandomAccessCollection {
 }
 
 struct MainView_Previews: PreviewProvider {
+    class MockOBDViewModel: OBDViewModel {
+        override init() {
+            super.init()
+            self.speed = 30 // Example speed
+            self.rpm = 1500 // Example RPM
+            self.fuelPressure = 100 // Example fuel pressure
+            self.isConnected = true // Assume connected for preview
+            self.initializationStatus = "Mock Connected"
+        }
+    }
+
+    class MockBrakingViewModel: BrakingViewModel {
+        override init(speedPublisher: Published<Int>.Publisher, rpmPublisher: Published<Int>.Publisher, fuelPressurePublisher: Published<Int>.Publisher) {
+            super.init(speedPublisher: speedPublisher, rpmPublisher: rpmPublisher, fuelPressurePublisher: fuelPressurePublisher)
+            
+            // Populate with sample braking events
+            self.brakingEvents = [
+                BrakingEvent(timestamp: Date().addingTimeInterval(-30), deceleration: 20.0, speed: 50, intensity: 0.8, fuelUsedLiters: 0.05, fuelCost: 0.08, speedAtReturn: 5),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-60), deceleration: 15.0, speed: 60, intensity: 0.6, fuelUsedLiters: 0.03, fuelCost: 0.05, speedAtReturn: 10),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-90), deceleration: 25.0, speed: 40, intensity: 0.9, fuelUsedLiters: 0.07, fuelCost: 0.12, speedAtReturn: 8),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-120), deceleration: 12.0, speed: 70, intensity: 0.5, fuelUsedLiters: 0.02, fuelCost: 0.03, speedAtReturn: nil),
+                BrakingEvent(timestamp: Date().addingTimeInterval(-150), deceleration: 18.0, speed: 55, intensity: 0.7, fuelUsedLiters: 0.04, fuelCost: 0.07, speedAtReturn: 15)
+            ]
+            self.fuelPrice = 1.80 // Set a sample fuel price for calculations in preview
+            self.expandedEventId = self.brakingEvents.first?.id
+        }
+    }
+
     static var previews: some View {
-        MainView()
+        let mockOBD = MockOBDViewModel()
+        let mockBraking = MockBrakingViewModel(
+            speedPublisher: mockOBD.$speed,
+            rpmPublisher: mockOBD.$rpm,
+            fuelPressurePublisher: mockOBD.$fuelPressure
+        )
+        MainView(obdViewModel: mockOBD, brakingViewModel: mockBraking)
     }
 }
