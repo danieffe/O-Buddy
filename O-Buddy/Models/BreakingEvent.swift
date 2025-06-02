@@ -17,4 +17,5 @@ struct BrakingEvent: Identifiable {
     var intensity: Double = 0
     var location: CLLocation?
     var address: String = ""
+    var isExpanded: Bool = false
 }
