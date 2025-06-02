@@ -13,5 +13,8 @@
 	<array>
 		<string>$(com.danielefontana.O-Buddy).backgroundRefresh</string>
 	</array>
+	<!-- ADD: Privacy - Location When In Use Usage Description -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to find nearby fuel stations and calculate fuel consumption during braking events.</string>
 </dict>
 </plist>

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import CoreLocation 
 
 struct MainView: View {
     let circleSize: CGFloat = 40
@@ -25,6 +26,12 @@ struct MainView: View {
 
     @StateObject private var obdViewModel: OBDViewModel
     @StateObject private var brakingViewModel: BrakingViewModel
+    @StateObject private var locationManager = LocationManager()
+    @State private var stations: [FuelStation] = []
+    @State private var selectedFuel = "gasolio"
+
+    private let fuelTypes = ["benzina", "gasolio", "gpl", "metano", "premium", "gasolio_plus"]
+    private let service = FuelPriceService()
 
     init() {
         let obdVM = OBDViewModel()
@@ -36,6 +43,11 @@ struct MainView: View {
                 fuelPressurePublisher: obdVM.$fuelPressure
             )
         )
+    }
+
+    var averagePrice: Double {
+        let prices = stations.compactMap { Double($0.prezzo.replacingOccurrences(of: ",", with: ".")) }
+        return prices.isEmpty ? 0.0 : prices.reduce(0, +) / Double(prices.count)
     }
 
     var body: some View {
@@ -118,21 +130,15 @@ struct MainView: View {
                             }
 
                             ZStack {
-                                // CHANGE: Iterate over enumerated events to get index
                                 ForEach(brakingViewModel.brakingEvents.enumerated().reversed(), id: \.element.id) { index, event in
-                                    // CHANGE: Removed displayIndex as we are reversing the array directly
-                                    // REMOVE: Removed numberOfEvents and displayIndex calculation
-                                    Group { // Group to apply onTapGesture to both circle and text
+                                    Group {
                                         Circle()
-                                            // CHANGE: Fill based on event.isExpanded
                                             .fill(event.isExpanded ? Color.black : Color.white)
                                             .stroke(Color.black, lineWidth: eventCircleStrokeWidth)
                                             .frame(width: eventCircleSize, height: eventCircleSize)
-                                            // CHANGE: Position circles using the index of the reversed array
                                             .offset(y: CGFloat(index) * eventCircleVerticalSpacing)
                                             .transition(.scale)
                                         
-                                        // ADD: Braking event details
                                         if event.isExpanded {
                                             VStack(alignment: .leading, spacing: 4) {
                                                 Text("Hard Brake")
@@ -155,7 +161,7 @@ struct MainView: View {
                                                     .fontWeight(.bold)
                                                 Text("Gasoline Consumption")
                                                     .font(.caption)
-                                                Text("+0.20€") // Placeholder
+                                                Text(String(format: "%.2f €", event.fuelCost))
                                                     .font(.caption)
                                                     .fontWeight(.bold)
                                                     .foregroundColor(.red)
@@ -165,13 +171,11 @@ struct MainView: View {
                                             .background(Color.white.opacity(0.9))
                                             .cornerRadius(8)
                                             .shadow(radius: 3)
-                                            // CHANGE: Position text to the right of the circle
                                             .offset(x: geo.size.width / 2 - geo.size.width / 2 + 100, y: CGFloat(index) * eventCircleVerticalSpacing)
-                                            .transition(.opacity) // Add transition for text appearance/disappearance
+                                            .transition(.opacity)
                                         }
                                     }
                                     .onTapGesture {
-                                        // CHANGE: Toggle isExpanded for the tapped event
                                         brakingViewModel.brakingEvents[index].isExpanded.toggle()
                                     }
                                 }
@@ -184,7 +188,31 @@ struct MainView: View {
                 }
                 .onAppear {
                     pulseScale = 1.05
+                    // Removed fetchData() from onAppear
                 }
+                .onChange(of: locationManager.location) { newLocation in
+                    if newLocation != nil { 
+                        fetchData()
+                    }
+                }
+                .onChange(of: selectedFuel) { _ in fetchData()
+                }
+            }
+        }
+    }
+
+    private func fetchData() {
+        guard let location = locationManager.location else {
+            print("DEBUG: Location not available for fetching fuel prices in MainView.")
+            return
+        }
+        print("DEBUG: Fetching stations for lat: \(location.coordinate.latitude), lon: \(location.coordinate.longitude), fuelType: \(selectedFuel) in MainView.")
+        service.fetchStations(lat: location.coordinate.latitude, lon: location.coordinate.longitude, fuelType: selectedFuel) { fetchedStations in
+            self.stations = fetchedStations
+            self.brakingViewModel.fuelPrice = self.averagePrice
+            print("DEBUG: Fetched \(fetchedStations.count) stations in MainView. Average price for \(self.selectedFuel): \(self.averagePrice) €/L")
+            if fetchedStations.isEmpty {
+                print("DEBUG: No fuel stations found for the current location and fuel type in MainView.")
             }
         }
     }

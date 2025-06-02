@@ -17,5 +17,8 @@ struct BrakingEvent: Identifiable {
     var intensity: Double = 0
     var location: CLLocation?
     var address: String = ""
+    var fuelUsedLiters: Double = 0
+    var fuelCost: Double = 0.0
     var isExpanded: Bool = false
 }
+
