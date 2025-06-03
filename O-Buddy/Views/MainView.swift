@@ -107,21 +107,27 @@ struct MainView: View {
                             y: circleCenterY
                         )
 
-                    Text("Actual Speed\n\(obdViewModel.speed) km/h")
-                        .foregroundColor(.black)
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .position(
-                            x: geo.size.width / 2 + 110,
-                            y: circleCenterY
-                        )
+                    VStack { // Use VStack to align text vertically
+                        Text("Actual Speed")
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundColor(.black)
+                        Text("\(obdViewModel.speed) km/h")
+                            .font(.body)
+                            .foregroundColor(.black)
+                    }
+                    .multilineTextAlignment(.center)
+                    .position(
+                        x: geo.size.width / 2 + 110,
+                        y: circleCenterY
+                    )
                     
                     Image(systemName: "wave.3.right.circle")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: iconSize, height: iconSize)
                         .foregroundColor(obdViewModel.isConnected ? .green : .red)
-                        .position(x: iconPadding + iconSize / 2, y: iconPadding + iconSize / 2)
+                        .position(x: geo.size.width - 2 * iconPadding - 1.5 * iconSize, y: iconPadding + iconSize / 2)
 
                     NavigationLink(destination: DashboardView()) {
                         Image(systemName: "list.clipboard")
@@ -131,6 +137,28 @@ struct MainView: View {
                             .foregroundColor(.black)
                     }
                     .position(x: geo.size.width - iconPadding - iconSize / 2, y: iconPadding + iconSize / 2)
+
+                    VStack(alignment: .leading) {
+                        Text("Today, \(Date.now, format: .dateTime.day().month(.abbreviated).year())")
+                            .font(.title) // Changed from .title3 to .title
+                            .fontWeight(.bold)
+                            .foregroundColor(.black)
+                        
+                        Spacer().frame(height: 15)
+                        
+                        Text("Braking Events: \(brakingViewModel.dailyBrakingEventsCount)")
+                            .font(.body) // Changed font size
+                            .foregroundColor(.black)
+                        
+                        Text(String(format: "Daily Consumption: %.2f €", brakingViewModel.dailyFuelCost))
+                            .font(.body) // Changed font size
+                            .foregroundColor(.black)
+
+                        Text("Your driving style: Placeholder")
+                            .font(.body) // Set to same font size as daily consumption
+                            .foregroundColor(.black)
+                    }
+                    .position(x: iconPadding + iconSize / 2 + 95, y: iconPadding + iconSize / 2 + 45) 
 
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: 0) {
@@ -163,7 +191,7 @@ struct MainView: View {
                                                 .fontWeight(.bold)
                                                 .padding(.bottom, 4)
 
-                                            Text(event.address ?? "Indirizzo non disponibile")
+                                            Text(event.address)
                                                 .font(.caption)
                                                 .fontWeight(.regular)
                                                 .multilineTextAlignment(.trailing) // Align text to the right within its own frame
@@ -268,7 +296,7 @@ struct MainView_Previews: PreviewProvider {
 
     class MockBrakingViewModel: BrakingViewModel {
         override init(speedPublisher: Published<Int>.Publisher, rpmPublisher: Published<Int>.Publisher, fuelPressurePublisher: Published<Int>.Publisher, locationManager: LocationManager = LocationManager()) {
-            super.init(speedPublisher: speedPublisher, rpmPublisher: rpmPublisher, fuelPressurePublisher: fuelPressurePublisher, locationManager: locationManager)
+            super.init(speedPublisher: speedPublisher, rpmPublisher: fuelPressurePublisher, fuelPressurePublisher: fuelPressurePublisher, locationManager: locationManager)
             
             // Populate with sample braking events
             self.brakingEvents = [

@@ -34,15 +34,18 @@ class BrakingViewModel: ObservableObject {
     private var locationManager: LocationManager
     // CLGeocoder instance for reverse geocoding
     private let geocoder = CLGeocoder()
-
+    
+    private let userDefaultsKey = "brakingEvents" // ADD
 
     init(speedPublisher: Published<Int>.Publisher,
          rpmPublisher: Published<Int>.Publisher,
          fuelPressurePublisher: Published<Int>.Publisher,
-         locationManager: LocationManager = LocationManager()) { // Default value for previews/testing
+         locationManager: LocationManager = LocationManager()) {
         
         self.locationManager = locationManager // Store the passed LocationManager
         
+        loadBrakingEvents() // ADD: Load events on init
+
         speedPublisher
             .sink { [weak self] newSpeed in
                 self?.checkBrakingParameters(newSpeed: newSpeed)
@@ -60,6 +63,14 @@ class BrakingViewModel: ObservableObject {
                 self?.previousFuelPressure = newPressure
             }
             .store(in: &cancellables)
+        
+        // ADD: Save events whenever brakingEvents changes
+        $brakingEvents
+            .debounce(for: .seconds(1), scheduler: DispatchQueue.main) // Debounce to avoid frequent saves
+            .sink { [weak self] _ in
+                self?.saveBrakingEvents()
+            }
+            .store(in: &cancellables)
     }
     
     var totalFuelUsed: Double {
@@ -70,11 +81,54 @@ class BrakingViewModel: ObservableObject {
         brakingEvents.map(\.fuelCost).reduce(0, +)
     }
 
+    // ADD: Computed property to calculate daily braking events count
+    var dailyBrakingEventsCount: Int {
+        let calendar = Calendar.current
+        let today = Date()
+        return brakingEvents.filter { event in
+            calendar.isDate(event.timestamp, inSameDayAs: today)
+        }.count
+    }
+
+    // ADD: Computed property to calculate daily fuel cost
+    var dailyFuelCost: Double {
+        let calendar = Calendar.current
+        let today = Date()
+        let todayEvents = brakingEvents.filter { event in
+            calendar.isDate(event.timestamp, inSameDayAs: today)
+        }
+        return todayEvents.map(\.fuelCost).reduce(0, +)
+    }
+
     func toggleEventExpansion(for id: UUID) {
         if expandedEventId == id {
             expandedEventId = nil
         } else {
             expandedEventId = id
+        }
+    }
+    
+    // ADD: Save function
+    private func saveBrakingEvents() {
+        if let encoded = try? JSONEncoder().encode(brakingEvents) {
+            UserDefaults.standard.set(encoded, forKey: userDefaultsKey)
+            print("DEBUG: Braking events saved to UserDefaults. Total events: \(brakingEvents.count)")
+        } else {
+            print("ERROR: Failed to encode braking events.")
+        }
+    }
+
+    // ADD: Load function
+    private func loadBrakingEvents() {
+        if let savedEventsData = UserDefaults.standard.data(forKey: userDefaultsKey) {
+            if let decodedEvents = try? JSONDecoder().decode([BrakingEvent].self, from: savedEventsData) {
+                self.brakingEvents = decodedEvents
+                print("DEBUG: Braking events loaded from UserDefaults. Total events: \(brakingEvents.count)")
+            } else {
+                print("ERROR: Failed to decode braking events.")
+            }
+        } else {
+            print("DEBUG: No braking events found in UserDefaults.")
         }
     }
 
@@ -107,6 +161,7 @@ class BrakingViewModel: ObservableObject {
                 print("DEBUG: Braking event \(activeId) speedAtReturn updated to \(newSpeed) km/h")
             }
             activeBrakingEventId = nil // Clear the active event ID
+            saveBrakingEvents() // ADD: Save after speedAtReturn update
         }
         
         previousSpeed = newSpeed
@@ -146,6 +201,7 @@ class BrakingViewModel: ObservableObject {
                 deceleration: decelerationRate,
                 speed: speed,
                 intensity: brakingIntensity,
+                // REMOVE: location: nil
                 fuelUsedLiters: litersUsed,
                 fuelCost: cost,
                 speedAtReturn: nil // This will be updated in checkBrakingParameters when deceleration stops
@@ -153,7 +209,10 @@ class BrakingViewModel: ObservableObject {
             
             // Capture location and geocode
             if let currentLocation = locationManager.location {
-                event.location = currentLocation
+                // CHANGE: Assign to latitude/longitude directly
+                event.latitude = currentLocation.coordinate.latitude
+                event.longitude = currentLocation.coordinate.longitude
+
                 geocoder.reverseGeocodeLocation(currentLocation) { [weak self] (placemarks, error) in
                     guard let self = self else { return }
                     if let placemark = placemarks?.first {
@@ -167,6 +226,7 @@ class BrakingViewModel: ObservableObject {
                         if let index = self.brakingEvents.firstIndex(where: { $0.id == event.id }) {
                             self.brakingEvents[index].address = addressString
                             print("DEBUG: Braking event \(event.id) address updated to \(addressString)")
+                            self.saveBrakingEvents() // ADD: Save after address update
                         }
                     } else if let error = error {
                         print("DEBUG: Geocoding failed with error: \(error.localizedDescription)")
@@ -177,6 +237,7 @@ class BrakingViewModel: ObservableObject {
             brakingEvents.append(event)
             // Set the newly created event as the active one
             activeBrakingEventId = event.id
+            saveBrakingEvents() // ADD: Save after new event
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -186,7 +247,10 @@ class BrakingViewModel: ObservableObject {
     
     func addLocationToLastEvent(_ location: CLLocation?, address: String) {
         guard !brakingEvents.isEmpty else { return }
-        brakingEvents[brakingEvents.count - 1].location = location
+        // CHANGE: Update latitude and longitude instead of location
+        brakingEvents[brakingEvents.count - 1].latitude = location?.coordinate.latitude
+        brakingEvents[brakingEvents.count - 1].longitude = location?.coordinate.longitude
         brakingEvents[brakingEvents.count - 1].address = address
+        saveBrakingEvents() // ADD: Save after location update
     }
 }
