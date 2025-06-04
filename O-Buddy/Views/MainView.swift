@@ -18,7 +18,7 @@ struct MainView: View {
   @State private var pulseScale: CGFloat = 1.0
   let eventCircleSize: CGFloat = 40
   let eventCircleStrokeWidth: CGFloat = 25
-  let initialEventCircleOffset: CGFloat = 95 
+  let initialEventCircleOffset: CGFloat = 95
   let eventCircleVerticalSpacing: CGFloat = 70
   let eventCircleNonExpandedStrokeWidth: CGFloat = 10
 
@@ -95,56 +95,113 @@ struct MainView: View {
                           y: circleBottomY - lineOverlap + (finalHeight / 2)
                       )
 
-                  Circle()
-                      .fill(Color.black)
-                      .overlay(
-                          Circle()
-                              .stroke(Color.black, style: strokeStyle)
-                              .opacity(0)
-                      )
-                      .frame(width: circleSize, height: circleSize)
-                      .position(
-                          x: geo.size.width / 2,
-                          y: circleCenterY
-                      )
-                      .scaleEffect(pulseScale)
-                      .animation(
-                          .easeInOut(duration: 1.2)
-                              .repeatForever(autoreverses: true),
-                          value: pulseScale
-                      )
+                  Group {
+                                        if obdViewModel.isConnected {
+                                            Circle()
+                                                .fill(Color.black)
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(Color.black, style: strokeStyle)
+                                                        .opacity(0)
+                                                )
+                                        } else {
+                                            Rectangle()
+                                                .fill(Color.black)
+                                        }
+                                    }
+                                    .frame(width: circleSize, height: circleSize)
+                                    .position(
+                                        x: geo.size.width / 2,
+                                        y: circleCenterY
+                                    )
+                                    .scaleEffect(pulseScale)
+                                    .animation(
+                                        .easeInOut(duration: 1.2)
+                                            .repeatForever(autoreverses: true),
+                                        value: pulseScale
+                                    )
 
                   // ADD: Driving Style section
-                  VStack { // Use VStack to align text vertically
-                      Text("Driving style")
-                          .font(.body)
-                          .fontWeight(.bold)
-                          .foregroundColor(.black)
-                      // CHANGE: Dynamically display driving style and color
-                      Text(drivingStyle.style.rawValue)
-                          .font(.body)
-                          .foregroundColor(drivingStyle.color)
-                  }
-                  .multilineTextAlignment(.center)
-                  .position(
-                      x: geo.size.width / 2 - 90,
-                      y: circleCenterY - 150
-                  )
+                  Group {
+                                        if obdViewModel.isConnected {
+                                            // Blocchi informativi quando l'OBD è connesso
 
-                  VStack { // Use VStack to align text vertically
-                      Text("Actual speed")
-                          .font(.body)
-                          .fontWeight(.bold)
-                          .foregroundColor(.black)
-                      Text("\(obdViewModel.speed) km/h")
-                          .font(.body)
-                          .foregroundColor(.black)
-                  }
-                  .multilineTextAlignment(.center)
-                  .position(
-                      x: geo.size.width / 2 + 90,
-                      y: circleCenterY - 150
-                  )
+                                            // Driving Style
+                                            VStack {
+                                                Text("Driving style")
+                                                    .font(.body)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.black)
+                                                Text(drivingStyle.style.rawValue)
+                                                    .font(.body)
+                                                    .foregroundColor(drivingStyle.color)
+                                            }
+                                            .multilineTextAlignment(.center)
+                                            .position(
+                                                x: geo.size.width / 2 - 90,
+                                                y: circleCenterY - 150
+                                            )
+
+                                            // Actual Speed
+                                            VStack {
+                                                Text("Actual speed")
+                                                    .font(.body)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.black)
+                                                Text("\(obdViewModel.speed) km/h")
+                                                    .font(.body)
+                                                    .foregroundColor(.black)
+                                            }
+                                            .multilineTextAlignment(.center)
+                                            .position(
+                                                x: geo.size.width / 2 + 90,
+                                                y: circleCenterY - 150
+                                            )
+
+                                            // Daily Brakes
+                                            VStack {
+                                                Text("Daily brakes:")
+                                                    .font(.body)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.black)
+                                                Text("\(brakingViewModel.dailyBrakingEventsCount)")
+                                                    .font(.body)
+                                                    .foregroundColor(.black)
+                                            }
+                                            .multilineTextAlignment(.center)
+                                            .position(
+                                                x: geo.size.width / 2 - 90,
+                                                y: circleCenterY - 80
+                                            )
+
+                                            // Daily Consumption
+                                            VStack {
+                                                Text("Daily consumption:")
+                                                    .font(.body)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.black)
+                                                Text(String(format: "%.2f €", brakingViewModel.dailyFuelCost))
+                                                    .font(.body)
+                                                    .foregroundColor(.black)
+                                            }
+                                            .multilineTextAlignment(.center)
+                                            .position(
+                                                x: geo.size.width / 2 + 90,
+                                                y: circleCenterY - 80
+                                            )
+                                        } else {
+                                            // Messaggio quando l'OBD non è connesso
+                                            Text("Searching for OBD devices...")
+                                                .font(.title2)
+                                                .foregroundColor(.gray)
+                                                .multilineTextAlignment(.center)
+                                                .frame(width: geo.size.width * 0.8)
+                                                .position(
+                                                    x: geo.size.width / 2,
+                                                    y: circleCenterY - 100
+                                                )
+                                        }
+                                    }
 
                   NavigationLink(destination: DashboardView().environmentObject(brakingViewModel)) {
                                      Image(systemName: "fuelpump.fill")
@@ -166,37 +223,7 @@ struct MainView: View {
                   .position(x: iconPadding + iconSize / 2, y: iconPadding + iconSize / 2 + 15)
 
 
-                  // ADD: Braking Events section
-                  VStack {
-                      Text("Daily brakes:")
-                          .font(.body)
-                          .fontWeight(.bold)
-                          .foregroundColor(.black)
-                      Text("\(brakingViewModel.dailyBrakingEventsCount)")
-                          .font(.body)
-                          .foregroundColor(.black)
-                  }
-                  .multilineTextAlignment(.center)
-                  .position(
-                      x: geo.size.width / 2 - 90,
-                      y: circleCenterY - 80
-                  )
-
-                  // ADD: Daily Consumption section
-                  VStack {
-                      Text("Daily consumption:")
-                          .font(.body)
-                          .fontWeight(.bold)
-                          .foregroundColor(.black)
-                      Text(String(format: "%.2f €", brakingViewModel.dailyFuelCost))
-                          .font(.body)
-                          .foregroundColor(.black)
-                  }
-                  .multilineTextAlignment(.center)
-                  .position(
-                      x: geo.size.width / 2 + 90,
-                      y: circleCenterY - 80
-                  )
+                
 
                   ScrollView(.vertical, showsIndicators: false) {
                       VStack(spacing: eventCircleVerticalSpacing - eventCircleSize) {
