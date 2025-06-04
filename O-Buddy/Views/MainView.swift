@@ -23,7 +23,7 @@ struct MainView: View {
   let eventCircleNonExpandedStrokeWidth: CGFloat = 10
 
 
-  let iconSize: CGFloat = 40
+  let iconSize: CGFloat = 30
   let iconPadding: CGFloat = 20
 
   @StateObject private var obdViewModel: OBDViewModel
@@ -114,10 +114,9 @@ struct MainView: View {
                           value: pulseScale
                       )
 
-                  // REMOVE: Text("Aggressive drive")
                   // ADD: Driving Style section
                   VStack { // Use VStack to align text vertically
-                      Text("Driving Style")
+                      Text("Driving style")
                           .font(.body)
                           .fontWeight(.bold)
                           .foregroundColor(.black)
@@ -133,7 +132,7 @@ struct MainView: View {
                   )
 
                   VStack { // Use VStack to align text vertically
-                      Text("Actual Speed")
+                      Text("Actual speed")
                           .font(.body)
                           .fontWeight(.bold)
                           .foregroundColor(.black)
@@ -148,25 +147,31 @@ struct MainView: View {
                   )
 
                   NavigationLink(destination: DashboardView().environmentObject(brakingViewModel)) { // CHANGE: Pass brakingViewModel as environment object
-                      // CHANGE: Replaced SF Symbol with asset image
-                      Image("ConsumptionTanksButton")
+                                     // CHANGE: Replaced SF Symbol with asset image
+                                     // REMOVE: Image("ConsumptionTanksButton")
+                                     // ADD: Replaced with SF Symbol
+                                     Image(systemName: "fuelpump.fill")
+                                         .resizable()
+                                         .aspectRatio(contentMode: .fit)
+                                         .frame(width: iconSize, height: iconSize)
+                                         .foregroundColor(.black)
+                                 }
+                                 .position(x: geo.size.width - iconPadding - iconSize / 2, y: iconPadding + iconSize / 2 + 15) // CHANGE: Adjusted Y position to align with title
+
+                  // ADD: Settings icon in top-left corner
+                  NavigationLink(destination: SettingsView()) { // CHANGE: Placeholder destination replaced with SettingsView
+                      Image(systemName: "gearshape.fill")
                           .resizable()
                           .aspectRatio(contentMode: .fit)
                           .frame(width: iconSize, height: iconSize)
                           .foregroundColor(.black)
                   }
-                  .position(x: geo.size.width - iconPadding - iconSize / 2, y: iconPadding + iconSize / 2 + 15) // CHANGE: Adjusted Y position to align with title
+                  .position(x: iconPadding + iconSize / 2, y: iconPadding + iconSize / 2 + 15)
 
-                  // CHANGE: Moved "Today, Date" out of the original VStack to keep it separate
-                  Text("Today, \(Date.now, format: .dateTime.day().month(.abbreviated).year())")
-                      .font(.title)
-                      .fontWeight(.bold)
-                      .foregroundColor(.black)
-                      .position(x: iconPadding + iconSize / 2 + 95, y: iconPadding + iconSize / 2 + 15)
 
                   // ADD: Braking Events section
                   VStack {
-                      Text("Braking Events:")
+                      Text("Daily brakes:")
                           .font(.body)
                           .fontWeight(.bold)
                           .foregroundColor(.black)
@@ -182,7 +187,7 @@ struct MainView: View {
 
                   // ADD: Daily Consumption section
                   VStack {
-                      Text("Daily Consumption:")
+                      Text("Daily consumption:")
                           .font(.body)
                           .fontWeight(.bold)
                           .foregroundColor(.black)
@@ -195,9 +200,6 @@ struct MainView: View {
                       x: geo.size.width / 2 + 90, // CHANGE: Adjusted X position from +110 to +90
                       y: circleCenterY - 80 // CHANGE: Positioned to create more space from upper row
                   )
-
-                  // REMOVE: Original VStack containing "Today, Date", "Braking Events", and "Daily Consumption"
-                  // REMOVE: Text("Your driving style: Placeholder")
 
                   ScrollView(.vertical, showsIndicators: false) {
                       VStack(spacing: 0) {
@@ -243,7 +245,6 @@ struct MainView: View {
 
                                       // CHANGE: Right side details (technical info)
                                       VStack(alignment: .leading, spacing: 4) {
-                                          // REMOVE: Display Date of braking event (moved to left)
                                           Text("Hard Brake")
                                               .font(.subheadline)
                                               .fontWeight(.bold)
@@ -268,7 +269,6 @@ struct MainView: View {
                                               .font(.caption)
                                               .fontWeight(.bold)
                                               .foregroundColor(.red)
-                                          // REMOVE: Display Address of braking event (moved to left)
                                       }
                                       .padding(.horizontal, 10)
                                       .padding(.vertical, 8)
