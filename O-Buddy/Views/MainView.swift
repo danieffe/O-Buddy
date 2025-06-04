@@ -18,7 +18,7 @@ struct MainView: View {
   @State private var pulseScale: CGFloat = 1.0
   let eventCircleSize: CGFloat = 40
   let eventCircleStrokeWidth: CGFloat = 25
-  let initialEventCircleOffset: CGFloat = 90
+  let initialEventCircleOffset: CGFloat = 95 
   let eventCircleVerticalSpacing: CGFloat = 70
   let eventCircleNonExpandedStrokeWidth: CGFloat = 10
 
@@ -45,12 +45,12 @@ struct MainView: View {
           // Pass locationManager instance to BrakingViewModel during initialization
           let newLocationManager = LocationManager()
           bvm = BrakingViewModel(
-              speedPublisher: obdViewModel.$speed.eraseToAnyPublisher(), // CHANGE: Converted to AnyPublisher
-              rpmPublisher: obdViewModel.$rpm.eraseToAnyPublisher(), // CHANGE: Converted to AnyPublisher
-              fuelPressurePublisher: obdViewModel.$fuelPressure.eraseToAnyPublisher(), // CHANGE: Converted to AnyPublisher
-              locationManager: newLocationManager // Pass the locationManager here
+              speedPublisher: obdViewModel.$speed.eraseToAnyPublisher(),
+              rpmPublisher: obdViewModel.$rpm.eraseToAnyPublisher(),
+              fuelPressurePublisher: obdViewModel.$fuelPressure.eraseToAnyPublisher(),
+              locationManager: newLocationManager
           )
-          _locationManager = StateObject(wrappedValue: newLocationManager) // Initialize _locationManager
+          _locationManager = StateObject(wrappedValue: newLocationManager)
       }
       _brakingViewModel = StateObject(wrappedValue: bvm)
   }
@@ -127,8 +127,8 @@ struct MainView: View {
                   }
                   .multilineTextAlignment(.center)
                   .position(
-                      x: geo.size.width / 2 - 90, // CHANGE: Adjusted X position from -110 to -90
-                      y: circleCenterY - 150 // CHANGE: Adjusted Y position to be higher
+                      x: geo.size.width / 2 - 90,
+                      y: circleCenterY - 150
                   )
 
                   VStack { // Use VStack to align text vertically
@@ -142,24 +142,21 @@ struct MainView: View {
                   }
                   .multilineTextAlignment(.center)
                   .position(
-                      x: geo.size.width / 2 + 90, // CHANGE: Adjusted X position from +110 to +90
-                      y: circleCenterY - 150 // CHANGE: Adjusted Y position to be higher
+                      x: geo.size.width / 2 + 90,
+                      y: circleCenterY - 150
                   )
 
-                  NavigationLink(destination: DashboardView().environmentObject(brakingViewModel)) { // CHANGE: Pass brakingViewModel as environment object
-                                     // CHANGE: Replaced SF Symbol with asset image
-                                     // REMOVE: Image("ConsumptionTanksButton")
-                                     // ADD: Replaced with SF Symbol
+                  NavigationLink(destination: DashboardView().environmentObject(brakingViewModel)) {
                                      Image(systemName: "fuelpump.fill")
                                          .resizable()
                                          .aspectRatio(contentMode: .fit)
                                          .frame(width: iconSize, height: iconSize)
                                          .foregroundColor(.black)
                                  }
-                                 .position(x: geo.size.width - iconPadding - iconSize / 2, y: iconPadding + iconSize / 2 + 15) // CHANGE: Adjusted Y position to align with title
+                                 .position(x: geo.size.width - iconPadding - iconSize / 2, y: iconPadding + iconSize / 2 + 15)
 
                   // ADD: Settings icon in top-left corner
-                  NavigationLink(destination: SettingsView()) { // CHANGE: Placeholder destination replaced with SettingsView
+                  NavigationLink(destination: SettingsView()) {
                       Image(systemName: "gearshape.fill")
                           .resizable()
                           .aspectRatio(contentMode: .fit)
@@ -181,8 +178,8 @@ struct MainView: View {
                   }
                   .multilineTextAlignment(.center)
                   .position(
-                      x: geo.size.width / 2 - 90, // CHANGE: Adjusted X position from -110 to -90
-                      y: circleCenterY - 80 // CHANGE: Positioned to create more space from upper row
+                      x: geo.size.width / 2 - 90,
+                      y: circleCenterY - 80
                   )
 
                   // ADD: Daily Consumption section
@@ -197,82 +194,81 @@ struct MainView: View {
                   }
                   .multilineTextAlignment(.center)
                   .position(
-                      x: geo.size.width / 2 + 90, // CHANGE: Adjusted X position from +110 to +90
-                      y: circleCenterY - 80 // CHANGE: Positioned to create more space from upper row
+                      x: geo.size.width / 2 + 90,
+                      y: circleCenterY - 80
                   )
 
                   ScrollView(.vertical, showsIndicators: false) {
-                      VStack(spacing: 0) {
-                          let topPaddingForScrollViewContent = initialEventCircleOffset - (circleSize / 2) + lineOverlap
-                          if topPaddingForScrollViewContent > 0 {
-                              Spacer(minLength: topPaddingForScrollViewContent)
-                          }
+                      VStack(spacing: eventCircleVerticalSpacing - eventCircleSize) {
+                          let topPaddingToFirstEventCenter = initialEventCircleOffset - (circleSize / 2) + lineOverlap
+                          Spacer(minLength: topPaddingToFirstEventCenter - (eventCircleSize / 2))
 
-                          ZStack {
-                              ForEach(brakingViewModel.brakingEvents.enumerated().reversed(), id: \.element.id) { index, event in
+                          ForEach(brakingViewModel.brakingEvents.reversed(), id: \.id) { event in
+                              ZStack {
                                   let isExpanded = brakingViewModel.expandedEventId == event.id
                                   Group {
                                       Circle()
                                           .fill(isExpanded ? Color.black : Color.white)
                                           .stroke(Color.black, lineWidth: eventCircleNonExpandedStrokeWidth)
                                           .frame(width: eventCircleSize, height: eventCircleSize)
-                                          .offset(y: CGFloat(index) * eventCircleVerticalSpacing)
-                                          // ADD: Animation for the circle's position changes
-                                          .animation(.easeInOut(duration: 1.0), value: index) // Animates movement based on index change
+                                          .animation(.easeInOut(duration: 1.0), value: isExpanded)
                                   }
                                   .onTapGesture {
                                       brakingViewModel.toggleEventExpansion(for: event.id)
                                   }
 
                                   if isExpanded {
-                                      // ADD: Left side details (Date, Address)
-                                      VStack(alignment: .trailing, spacing: 4) {
-                                          Text(event.timestamp, format: .dateTime.day().month(.abbreviated).year())
-                                              .font(.caption)
-                                              .fontWeight(.bold)
-                                              .padding(.bottom, 4)
+                                      HStack(spacing: 0) {
+                                          // Left side details (Date, Address)
+                                          VStack(alignment: .trailing, spacing: 4) {
+                                              Text(event.timestamp, format: .dateTime.day().month(.abbreviated).year())
+                                                  .font(.caption)
+                                                  .fontWeight(.bold)
+                                                  .padding(.bottom, 4)
 
-                                          Text(event.address)
-                                              .font(.caption)
-                                              .fontWeight(.regular)
-                                              .multilineTextAlignment(.trailing) // Align text to the right within its own frame
-                                              .padding(.top, 4)
-                                      }
-                                      .padding(.horizontal, 10)
-                                      .padding(.vertical, 8)
-                                      .offset(x: geo.size.width / 2 - geo.size.width / 2 - 100, y: CGFloat(index) * eventCircleVerticalSpacing) // Adjusted X offset for left side
-                                      .transition(.scale.combined(with: .opacity).animation(.easeInOut(duration: 0.3)))
+                                              Text(event.address)
+                                                  .font(.caption)
+                                                  .fontWeight(.regular)
+                                                  .multilineTextAlignment(.trailing)
+                                          }
+                                          .padding(.horizontal, 10)
+                                          .padding(.vertical, 8)
+                                          .frame(maxWidth: (geo.size.width / 2) - (eventCircleSize / 2) - 20, alignment: .trailing)
 
-                                      // CHANGE: Right side details (technical info)
-                                      VStack(alignment: .leading, spacing: 4) {
-                                          Text("Hard Brake")
-                                              .font(.subheadline)
-                                              .fontWeight(.bold)
-                                          Text("Speed at stop")
-                                              .font(.caption)
-                                          Text("\(event.speed ?? 0) km/h")
-                                              .font(.caption)
-                                              .fontWeight(.bold)
-                                          Text("Speed at return")
-                                              .font(.caption)
-                                          Text(event.speedAtReturn != nil ? "\(event.speedAtReturn!) km/h" : "N/A")
-                                              .font(.caption)
-                                              .fontWeight(.bold)
-                                          Text("RPM lost")
-                                              .font(.caption)
-                                          Text(String(format: "%.2f", event.intensity))
-                                              .font(.caption)
-                                              .fontWeight(.bold)
-                                          Text("Gasoline Consumption")
-                                              .font(.caption)
-                                          Text(String(format: "%.2f €", event.fuelCost))
-                                              .font(.caption)
-                                              .fontWeight(.bold)
-                                              .foregroundColor(.red)
+                                          Spacer(minLength: eventCircleSize + 40)
+
+                                          // Right side details (technical info)
+                                          VStack(alignment: .leading, spacing: 4) {
+                                              Text("Hard Brake")
+                                                  .font(.subheadline)
+                                                  .fontWeight(.bold)
+                                              Text("Speed at stop")
+                                                  .font(.caption)
+                                              Text("\(event.speed ?? 0) km/h")
+                                                  .font(.caption)
+                                                  .fontWeight(.bold)
+                                              Text("Speed at return")
+                                                  .font(.caption)
+                                              Text(event.speedAtReturn != nil ? "\(event.speedAtReturn!) km/h" : "N/A")
+                                                  .font(.caption)
+                                                  .fontWeight(.bold)
+                                              Text("RPM lost")
+                                                  .font(.caption)
+                                              Text(String(format: "%.2f", event.intensity))
+                                                  .font(.caption)
+                                                  .fontWeight(.bold)
+                                              Text("Gasoline Consumption")
+                                                  .font(.caption)
+                                              Text(String(format: "%.2f €", event.fuelCost))
+                                                  .font(.caption)
+                                                  .fontWeight(.bold)
+                                                  .foregroundColor(.red)
+                                          }
+                                          .padding(.horizontal, 10)
+                                          .padding(.vertical, 8)
+                                          .frame(maxWidth: (geo.size.width / 2) - (eventCircleSize / 2) - 20, alignment: .leading)
                                       }
-                                      .padding(.horizontal, 10)
-                                      .padding(.vertical, 8)
-                                      .offset(x: geo.size.width / 2 - geo.size.width / 2 + 100, y: CGFloat(index) * eventCircleVerticalSpacing) // Original X offset for right side
+                                      .frame(width: geo.size.width - 40)
                                       .transition(.scale.combined(with: .opacity).animation(.easeInOut(duration: 0.3)))
                                   }
                               }
@@ -334,14 +330,11 @@ struct MainView_Previews: PreviewProvider {
   }
 
   class MockBrakingViewModel: BrakingViewModel {
-      // CHANGE: Updated parameter types to AnyPublisher
       override init(speedPublisher: AnyPublisher<Int, Never>, rpmPublisher: AnyPublisher<Int, Never>, fuelPressurePublisher: AnyPublisher<Int, Never>, locationManager: LocationManager = LocationManager()) {
-          // CHANGE: Corrected call to super.init and passed AnyPublisher
           super.init(speedPublisher: speedPublisher, rpmPublisher: rpmPublisher, fuelPressurePublisher: fuelPressurePublisher, locationManager: locationManager)
 
           // Populate with sample braking events
           self.brakingEvents = [
-              // CHANGE: Reorder arguments in BrakingEvent initializer to match compiler's expected order (location before fuelUsedLiters)
               BrakingEvent(timestamp: Date().addingTimeInterval(-30), deceleration: 20.0, speed: 50, intensity: 0.8, location: CLLocation(latitude: 40.7128, longitude: -74.0060), address: "Via Roma, 1, Napoli", fuelUsedLiters: 0.05, fuelCost: 0.08, speedAtReturn: 5),
               BrakingEvent(timestamp: Date().addingTimeInterval(-60), deceleration: 15.0, speed: 60, intensity: 0.6, location: CLLocation(latitude: 41.9028, longitude: 12.4964), address: "Piazza Navona, Roma", fuelUsedLiters: 0.03, fuelCost: 0.05, speedAtReturn: 10),
               BrakingEvent(timestamp: Date().addingTimeInterval(-90), deceleration: 25.0, speed: 40, intensity: 0.9, location: CLLocation(latitude: 45.4642, longitude: 9.1900), address: "Duomo, Milano", fuelUsedLiters: 0.07, fuelCost: 0.12, speedAtReturn: 8),
@@ -355,12 +348,12 @@ struct MainView_Previews: PreviewProvider {
 
   static var previews: some View {
       let mockOBD = MockOBDViewModel()
-      let mockLocationManager = LocationManager() // Create a mock LocationManager
+      let mockLocationManager = LocationManager()
       let mockBraking = MockBrakingViewModel(
-          speedPublisher: mockOBD.$speed.eraseToAnyPublisher(), // CHANGE: Converted to AnyPublisher
-          rpmPublisher: mockOBD.$rpm.eraseToAnyPublisher(), // CHANGE: Converted to AnyPublisher
-          fuelPressurePublisher: mockOBD.$fuelPressure.eraseToAnyPublisher(), // CHANGE: Converted to AnyPublisher
-          locationManager: mockLocationManager // Pass the mock LocationManager
+          speedPublisher: mockOBD.$speed.eraseToAnyPublisher(),
+          rpmPublisher: mockOBD.$rpm.eraseToAnyPublisher(),
+          fuelPressurePublisher: mockOBD.$fuelPressure.eraseToAnyPublisher(),
+          locationManager: mockLocationManager
       )
       MainView(obdViewModel: mockOBD, brakingViewModel: mockBraking)
   }
