@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct OBuddyApp: App {
-    var body: some Scene {
-        WindowGroup {
-            MainView()
-        }
-    }
+  @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
+
+  var body: some Scene {
+      WindowGroup {
+          if hasCompletedOnboarding {
+              MainView()
+          } else {
+              OnboardingView()
+          }
+      }
+  }
 }
