@@ -22,6 +22,33 @@ struct DiagonalLines: Shape {
   }
 }
 
+// ADD: New Custom Shape for Open Top Tank Outline
+struct OpenTopTankOutline: Shape {
+    let lineWidth: CGFloat // REMOVE: cornerRadius from properties, it's not used for the outline's path
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        // Adjust the rect to account for the line width, so the stroke is within bounds
+        let adjustedRect = rect.insetBy(dx: lineWidth / 2, dy: lineWidth / 2)
+
+        // Move to the top-left corner
+        path.move(to: CGPoint(x: adjustedRect.minX, y: adjustedRect.minY))
+
+        // Draw left vertical line to the bottom-left corner
+        path.addLine(to: CGPoint(x: adjustedRect.minX, y: adjustedRect.maxY))
+
+        // Draw bottom horizontal line to the bottom-right corner
+        path.addLine(to: CGPoint(x: adjustedRect.maxX, y: adjustedRect.maxY))
+
+        // Draw right vertical line to the top-right corner
+        path.addLine(to: CGPoint(x: adjustedRect.maxX, y: adjustedRect.minY))
+        
+        // The path is left open at the top.
+        return path
+    }
+}
+
 struct TankView: View {
   let tankLimit: Double
   let lostFuelLiters: Double
@@ -44,10 +71,6 @@ struct TankView: View {
 
   private var tankGraphicView: some View {
       ZStack(alignment: .bottom) {
-          // Background of the tank (empty part, slight transparency)
-          RoundedRectangle(cornerRadius: 12)
-              .fill(Color.gray.opacity(0.1))
-
           // Liquid animato (representing lost fuel)
           GeometryReader { geometry in
               let width = geometry.size.width
@@ -57,7 +80,7 @@ struct TankView: View {
               
               let filledHeight = height * clampedFillPercentage
               
-              let waveHeight: CGFloat = 10 // Amplitude of the wave
+              let waveHeight: CGFloat = 5 // Amplitude of the wave
               let waveLength: CGFloat = width / 2 // Length of one wave cycle
               
               // Path for the animated liquid
@@ -85,21 +108,11 @@ struct TankView: View {
                   path.addLine(to: CGPoint(x: 0, y: waveBaseY + waveHeight))
                   path.closeSubpath()
               }
-              .fill(
-                  LinearGradient(
-                      colors: [
-                          Color.red.opacity(0.8), // Colors indicating "lost" fuel
-                          Color.red.opacity(0.6),
-                          Color.red.opacity(0.9)
-                      ],
-                      startPoint: .top,
-                      endPoint: .bottom
-                  )
-              )
+              .fill(Color.red.opacity(0.8)) // Replaced LinearGradient with a single solid Color for uniform appearance
               // Overlay the diagonal lines on the filled liquid
               .overlay(
                   DiagonalLines()
-                      .stroke(Color.black, lineWidth: 1)
+                      .stroke(Color.black, lineWidth: 1.5) // Increased lineWidth
                       .mask(
                           // Mask the lines to the same liquid path to ensure they only appear on the liquid
                           Path { path in
@@ -120,7 +133,7 @@ struct TankView: View {
               )
               // Clip the entire liquid view to the rounded rectangle shape of the inner tank
               .mask(
-                  RoundedRectangle(cornerRadius: 12)
+                  RoundedRectangle(cornerRadius: 15) // CornerRadius matching the original visual style
                       .frame(width: width, height: height)
               )
           }
@@ -149,16 +162,14 @@ struct TankView: View {
           tankGraphicView
               .frame(height: 250)
       }
-      .background(Color.white)
-      .cornerRadius(15)
       .overlay(
-          RoundedRectangle(cornerRadius: 15) // CHANGE: Changed from Rectangle to RoundedRectangle for consistent corner radius
-              .stroke(Color.black, lineWidth: 10)
+          OpenTopTankOutline(lineWidth: 10) // Pass only lineWidth
+              .stroke(Color.black, style: StrokeStyle(lineWidth: 10, lineCap: .butt, lineJoin: .miter)) // Changed lineJoin to .miter for sharp corners
       )
       .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
       // ADD: Attach onReceive to update waveOffset
       .onReceive(timer) { _ in
-          waveOffset += 0.3 // Increment continuously for rightward movement
+          waveOffset += 0.05 // Increment continuously for rightward movement
       }
   }
 }
@@ -170,4 +181,3 @@ struct TankView_Previews: PreviewProvider {
           .padding()
   }
 }
-

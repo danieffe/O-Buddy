@@ -8,94 +8,127 @@
 import Foundation
 
 class FuelPriceService {
-    func fetchStations(lat: Double, lon: Double, fuelType: String = "gasolio", distance: Int = 10, completion: @escaping ([FuelStation]) -> Void) {
-        let baseURL = "https://prezzi-carburante.onrender.com/api/distributori"
-        var components = URLComponents(string: baseURL)!
-        components.queryItems = [
-            URLQueryItem(name: "latitude", value: String(lat)),
-            URLQueryItem(name: "longitude", value: String(lon)),
-            URLQueryItem(name: "distance", value: String(distance)),
-            URLQueryItem(name: "fuel", value: fuelType),
-            URLQueryItem(name: "results", value: "50")
-        ]
+  // ADD: UserDefaults key for average fuel cost
+  private let lastAverageFuelCostKey = "lastAverageFuelCost"
 
-        guard let url = components.url else {
-            print("❌ URL non valido")
-            completion([])
-            return
-        }
-        print("DEBUG: FuelPriceService - Fetching from URL: \(url.absoluteString)")
-        // ADD: Debug print for data task initiation
-        print("DEBUG: FuelPriceService - Data task initiated.")
+  // ADD: Function to save the average fuel cost to UserDefaults
+  private func saveAverageFuelCost(_ cost: Double) {
+      UserDefaults.standard.set(cost, forKey: lastAverageFuelCostKey)
+      print("DEBUG: FuelPriceService - Saved average fuel cost: \(cost)")
+  }
 
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            // ADD: Debug print for completion handler entry
-            print("DEBUG: FuelPriceService - Data task completion handler entered.")
+  // ADD: Function to retrieve the last saved average fuel cost from UserDefaults
+  func getFallbackAverageFuelCost() -> Double? {
+      let cost = UserDefaults.standard.double(forKey: lastAverageFuelCostKey)
+      // CHECK: Check if a valid double was stored (0.0 is default if not found)
+      if cost > 0.0 {
+          print("DEBUG: FuelPriceService - Retrieved fallback average fuel cost: \(cost)")
+          return cost
+      }
+      print("DEBUG: FuelPriceService - No fallback average fuel cost found.")
+      return nil
+  }
 
-            if let error = error {
-                print("❌ Errore richiesta: \(error.localizedDescription)")
-                completion([])
-                return
-            }
+  func fetchStations(lat: Double, lon: Double, fuelType: String = "gasolio", distance: Int = 10, completion: @escaping ([FuelStation]) -> Void) {
+      let baseURL = "https://prezzi-carburante.onrender.com/api/distributori"
+      var components = URLComponents(string: baseURL)!
+      components.queryItems = [
+          URLQueryItem(name: "latitude", value: String(lat)),
+          URLQueryItem(name: "longitude", value: String(lon)),
+          URLQueryItem(name: "distance", value: String(distance)),
+          URLQueryItem(name: "fuel", value: fuelType),
+          URLQueryItem(name: "results", value: "50")
+      ]
 
-            // ADD: Debug print for HTTP response status code
-            if let httpResponse = response as? HTTPURLResponse {
-                print("DEBUG: FuelPriceService - HTTP Status Code: \(httpResponse.statusCode)")
-                if httpResponse.statusCode != 200 {
-                    print("DEBUG: FuelPriceService - Server returned non-200 status code.")
-                    completion([])
-                    return
-                }
-            } else {
-                print("DEBUG: FuelPriceService - Response is not HTTPURLResponse or is nil.")
-            }
+      guard let url = components.url else {
+          print("❌ URL non valido")
+          completion([])
+          return
+      }
+      print("DEBUG: FuelPriceService - Fetching from URL: \(url.absoluteString)")
+      // ADD: Debug print for data task initiation
+      print("DEBUG: FuelPriceService - Data task initiated.")
 
-            guard let data = data else {
-                print("❌ Nessun dato")
-                completion([])
-                return
-            }
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("DEBUG: FuelPriceService - Raw JSON Response:\n\(jsonString.prefix(500))...")
-            }
+      URLSession.shared.dataTask(with: url) { data, response, error in
+          // ADD: Debug print for completion handler entry
+          print("DEBUG: FuelPriceService - Data task completion handler entered.")
+
+          if let error = error {
+              print("❌ Errore richiesta: \(error.localizedDescription)")
+              completion([])
+              return
+          }
+
+          // ADD: Debug print for HTTP response status code
+          if let httpResponse = response as? HTTPURLResponse {
+              print("DEBUG: FuelPriceService - HTTP Status Code: \(httpResponse.statusCode)")
+              if httpResponse.statusCode != 200 {
+                  print("DEBUG: FuelPriceService - Server returned non-200 status code.")
+                  completion([])
+                  return
+              }
+          } else {
+              print("DEBUG: FuelPriceService - Response is not HTTPURLResponse or is nil.")
+          }
+
+          guard let data = data else {
+              print("❌ Nessun dato")
+              completion([])
+              return
+          }
+          if let jsonString = String(data: data, encoding: .utf8) {
+              print("DEBUG: FuelPriceService - Raw JSON Response:\n\(jsonString.prefix(500))...")
+          }
 
 
-            do {
-                let rawDict = try JSONDecoder().decode([String: FuelStationRaw].self, from: data)
-                print("DEBUG: FuelPriceService - Decoded \(rawDict.count) raw stations.")
+          do {
+              let rawDict = try JSONDecoder().decode([String: FuelStationRaw].self, from: data)
+              print("DEBUG: FuelPriceService - Decoded \(rawDict.count) raw stations.")
 
-                let stations: [FuelStation] = rawDict.values.compactMap { raw in
-                    guard
-                        let prezzo = Double(raw.prezzo.replacingOccurrences(of: ",", with: ".")),
-                        let distanza = Double(raw.distanza),
-                        let lat = Double(raw.latitudine),
-                        let lon = Double(raw.longitudine)
-                    else {
-                        print("DEBUG: FuelPriceService - Failed to parse raw station: \(raw.gestore ?? "N/A"), Prezzo: \(raw.prezzo ?? "N/A")")
-                        return nil
-                    }
+              let stations: [FuelStation] = rawDict.values.compactMap { raw in
+                  guard
+                      let prezzo = Double(raw.prezzo.replacingOccurrences(of: ",", with: ".")),
+                      let distanza = Double(raw.distanza),
+                      let lat = Double(raw.latitudine),
+                      let lon = Double(raw.longitudine)
+                  else {
+                      print("DEBUG: FuelPriceService - Failed to parse raw station: \(raw.gestore ?? "N/A"), Prezzo: \(raw.prezzo ?? "N/A")")
+                      return nil
+                  }
 
-                    return FuelStation(
-                        gestore: raw.gestore,
-                        indirizzo: raw.indirizzo,
-                        prezzo: String(format: "%.3f", prezzo),
-                        selfService: raw.selfService?.trimmingCharacters(in: .whitespacesAndNewlines) == "1",
-                        data: raw.data,
-                        distanza: distanza,
-                        latitudine: lat,
-                        longitudine: lon
-                    )
-                }
+                  return FuelStation(
+                      gestore: raw.gestore,
+                      indirizzo: raw.indirizzo,
+                      prezzo: String(format: "%.3f", prezzo),
+                      selfService: raw.selfService?.trimmingCharacters(in: .whitespacesAndNewlines) == "1",
+                      data: raw.data,
+                      distanza: distanza,
+                      latitudine: lat,
+                      longitudine: lon
+                  )
+              }
 
-                DispatchQueue.main.async {
-                    print("DEBUG: FuelPriceService - Completed with \(stations.count) valid stations.")
-                    completion(stations.sorted(by: { $0.distanza < $1.distanza }))
-                }
-            } catch {
-                print("❌ Errore parsing JSON: \(error)")
-                completion([])
-            }
-        }.resume()
-    }
+              // ADD: Calculate and save average fuel price if stations are found
+              if !stations.isEmpty {
+                  let sumOfPrices = stations.reduce(0.0) { total, station in
+                      if let price = Double(station.prezzo.replacingOccurrences(of: ",", with: ".")) {
+                          return total + price
+                      }
+                      return total
+                  }
+                  let averagePrice = sumOfPrices / Double(stations.count)
+                  self.saveAverageFuelCost(averagePrice)
+              }
+
+              DispatchQueue.main.async {
+                  print("DEBUG: FuelPriceService - Completed with \(stations.count) valid stations.")
+                  completion(stations.sorted(by: { $0.distanza < $1.distanza }))
+              }
+          } catch {
+              print("❌ Errore parsing JSON: \(error)")
+              completion([])
+          }
+      }.resume()
+  }
 }
 // End of file. No additional code.

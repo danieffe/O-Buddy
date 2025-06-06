@@ -4,156 +4,237 @@ struct OnboardingView: View {
 @State private var currentPage = 0
 private let pageCount = 5
 @Namespace var onboardingNamespace
+@State private var isPage2MassValid: Bool = false
 
 var body: some View {
-    ZStack {
-        LinearGradient(
-            gradient: Gradient(colors: [Color(hex: "#B1FCFF"), .white]),
-            startPoint: .bottom,
-            endPoint: .top
-        )
-        .ignoresSafeArea()
+  ZStack {
+      Color(.white)
+      .ignoresSafeArea()
 
-        VStack(spacing: 0) {
-            TabView(selection: $currentPage) {
-                OnboardingPage1().tag(0)
-                OnboardingPage2().tag(1)
-                OnboardingPage3(namespace: onboardingNamespace).tag(2)
-                OnboardingPage4(namespace: onboardingNamespace).tag(3)
-                OnboardingPage5().tag(4)
-            }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .animation(.easeInOut, value: currentPage)
+      VStack(spacing: 0) {
+          TabView(selection: $currentPage) {
+              OnboardingPage1().tag(0)
+              OnboardingPage2(isMassValid: $isPage2MassValid).tag(1)
+              OnboardingPage3(namespace: onboardingNamespace).tag(2)
+              OnboardingPage4(namespace: onboardingNamespace).tag(3)
+              OnboardingPage5().tag(4)
+          }
+          .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+          .animation(.easeInOut, value: currentPage)
+          .onChange(of: currentPage) { oldValue, newValue in
+              UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
 
-            Spacer()
+              if oldValue == 1 && newValue == 2 && !isPage2MassValid {
+                  self.currentPage = oldValue
+              }
+          }
 
-            CustomPageIndicator(currentPage: currentPage, pageCount: pageCount)
-                .padding(.bottom, 40)
-        }
-    }
+          Spacer()
+
+          CustomPageIndicator(currentPage: currentPage, pageCount: pageCount)
+              .padding(.bottom, 40)
+      }
+      .ignoresSafeArea(.keyboard, edges: .bottom) // Ensures the bottom indicator stays put
+  }
 }
 }
 
 struct OnboardingPage1: View {
 var body: some View {
-    VStack(spacing: 10) {
-        Text("Welcome to O-Buddy")
-            .font(.largeTitle)
-            .bold()
-            .foregroundColor(.black)
-            .padding(.top, 40)
-        
-        Text("Your driving assistant ready to support you!")
-            .font(.headline)
-            .foregroundColor(.gray)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal)
+  VStack(spacing: 10) {
+      Text("Welcome to O-Buddy")
+          .font(.largeTitle)
+          .bold()
+          .foregroundColor(.black)
+          .padding(.top, 40)
+      
+      Text("Your driving assistant ready to support you!")
+          .font(.headline)
+          .foregroundColor(.gray)
+          .multilineTextAlignment(.center)
+          .padding(.horizontal)
 
-        Spacer()
+      Spacer()
 
-        Image("OBD")
-            .resizable()
-            .scaledToFit()
-            .frame(width: 280, height: 280)
+      Image("OBD")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 280, height: 280)
 
-        Text("This app requires an OBD II interface to work.")
-            .font(.title3)
-            .multilineTextAlignment(.center)
-            .foregroundColor(.black)
-            .padding(.horizontal)
-        
-        Spacer()
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+      Text("This app requires an OBD II interface to work.")
+          .font(.title3)
+          .multilineTextAlignment(.center)
+          .foregroundColor(.black)
+          .padding(.horizontal)
+      
+      Spacer()
+  }
+  .frame(maxWidth: .infinity, maxHeight: .infinity)
 }
 }
+
 
 struct OnboardingPage2: View {
 @State private var carMass: String = ""
 @State private var selectedFuelType: String = "benzina"
+@FocusState private var isMassInputFocused: Bool
+@Binding var isMassValid: Bool
 
 private let fuelTypes = ["benzina", "gasolio", "gpl", "metano"]
 
+private func validateMass() {
+if let mass = Double(carMass), mass > 0 {
+  isMassValid = true
+} else {
+  isMassValid = false
+}
+}
+
 var body: some View {
-    VStack(spacing: 20) {
-        Text("Before we begin we need some informations:")
-            .font(.title2)
-            .bold()
-            .foregroundColor(.black)
-            .padding(.top, 40)
-            .padding(.bottom, 40)
+VStack(spacing: 10) {
+  VStack(alignment: .leading, spacing: 20) {
+      Text("Before starting we need some informations:")
+          .font(.title2)
+          .bold()
+          .foregroundColor(.black)
+          .padding(.top, 20)
+          .padding(.bottom, 0)
+          .padding(.horizontal, 40)
+          .multilineTextAlignment(.leading)
+          .fixedSize(horizontal: false, vertical: true)
 
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Insert here the mass of your car:")
-                .font(.title3)
-                .foregroundColor(.black)
-            HStack {
-                TextField("", text: $carMass)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(.plain)
-                Text("Kg")
-                    .font(.body)
-                    .foregroundColor(.black)
-            }
-            .padding(.horizontal, 10)
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(Color.white)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.black, lineWidth: 1)
-            )
+      Text("Insert here the mass of your car:")
+          .font(.title3)
+          .foregroundColor(.black)
+          .padding(.horizontal, 40)
+      HStack {
+          TextField("", text: $carMass)
+              .keyboardType(.decimalPad)
+              .textFieldStyle(.plain)
+              .padding(.horizontal, 10)
+              .frame(width: 220)
+              .frame(height: 50)
+              .background(Color.white)
+              .overlay(
+                  RoundedRectangle(cornerRadius: 8)
+                      .stroke(Color.black, lineWidth: 1)
+              )
+              .focused($isMassInputFocused)
+              .onChange(of: carMass) { _, _ in
+                  validateMass()
+              }
+          Text("Kg")
+              .font(.body)
+              .foregroundColor(.black)
+              .padding(.leading, 8)
+      }
+      .padding(.horizontal, 40)
 
-            Text("Insert the type of the fuel :")
-                .font(.title3)
-                .foregroundColor(.black)
-            Picker("Select Fuel Type", selection: $selectedFuelType) {
-                ForEach(fuelTypes, id: \.self) { fuel in
-                    Text(fuel.capitalized)
-                }
-            }
-            .pickerStyle(.menu)
-            .frame(height: 50)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.black, lineWidth: 1)
-            )
-        }
-        .padding(.horizontal, 40)
+      if !isMassValid {
+          Text("* This section is mandatory to proceed.")
+              .font(.caption)
+              .foregroundColor(.red)
+              .multilineTextAlignment(.center)
+              .padding(.horizontal, 40)
+      }
 
-        Spacer()
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+      Text("Remember to check your car registration document for the correct mass value.")
+          .font(.caption)
+          .foregroundColor(.gray)
+          .padding(.top, 5)
+          .padding(.horizontal, 40)
+          .fixedSize(horizontal: false, vertical: true)
+
+      Text("Ex: Italy")
+          .font(.caption2)
+          .foregroundColor(.gray)
+          .padding(.horizontal, 42)
+          .padding(.bottom, -10)
+
+      Image("CarDocument")
+          .resizable()
+          .frame(height: 240)
+          .padding(.top, 0)
+          .padding(.bottom, 20)
+          .padding(.horizontal, 40)
+
+      HStack {
+          Text("Insert the type of the fuel :")
+              .font(.title3)
+              .foregroundColor(.black)
+              .fixedSize(horizontal: false, vertical: true)
+          
+          Spacer()
+          
+          Picker("Select Fuel Type", selection: $selectedFuelType) {
+              ForEach(fuelTypes, id: \.self) { fuel in
+                  Text(fuel.capitalized)
+              }
+          }
+          .pickerStyle(.menu)
+          .frame(width: 120, height: 40)
+      }
+      .padding(.horizontal, 40)
+  }
+  Spacer()
+}
+.frame(maxWidth: .infinity, maxHeight: .infinity)
+.onAppear {
+  validateMass()
+}
+.toolbar {
+  ToolbarItemGroup(placement: .keyboard) {
+      Spacer()
+      Button("Done") {
+          isMassInputFocused = false
+          validateMass()
+      }
+  }
+}
 }
 }
 
 struct OnboardingPage3: View {
 let namespace: Namespace.ID
+@State private var circleOpacity: Double = 0
+@State private var textOpacity: Double = 0
 
 var body: some View {
-    VStack(spacing: 20) {
-        Spacer()
+VStack(spacing: 20) {
+  Spacer()
 
-        Circle()
-            .stroke(Color.black, lineWidth: 20)
-            .frame(width: 80, height: 80)
-            .matchedGeometryEffect(id: "onboardingCircle", in: namespace)
-        
-        Text("This is an event")
-            .font(.largeTitle)
-            .bold()
-            .foregroundColor(.black)
-            .padding(.top, 40)
+  Circle()
+      .stroke(Color.black, lineWidth: 20)
+      .frame(width: 80, height: 80)
+      .opacity(circleOpacity)
+  
+  Text("This is an event!")
+      .font(.largeTitle)
+      .bold()
+      .foregroundColor(.black)
+      .padding(.top, 40)
+      .opacity(textOpacity)
 
-        Text("You'll see events appear when you do a hard brake. try to avoid them when you can.")
-            .font(.title2)
-            .multilineTextAlignment(.center)
-            .foregroundColor(.black)
-            .padding(.horizontal)
-        
-        Spacer()
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  Text("You'll see events appear when you do an hard brake. Try to avoid them while you can.")
+      .font(.title2)
+      .multilineTextAlignment(.center)
+      .foregroundColor(.black)
+      .padding(.horizontal, 40)
+      .opacity(textOpacity)
+  
+  Spacer()
+}
+.frame(maxWidth: .infinity, maxHeight: .infinity)
+.onAppear {
+  withAnimation(.easeOut(duration: 0.8)) {
+      circleOpacity = 1
+  }
+  DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+      withAnimation(.easeOut(duration: 0.8)) {
+          textOpacity = 1
+      }
+  }
+}
 }
 }
 
@@ -161,74 +242,73 @@ struct OnboardingPage4: View {
 let namespace: Namespace.ID
 
 var body: some View {
-    VStack(spacing: 20) {
-        Spacer()
+VStack(spacing: 20) {
+  Spacer()
 
-        HStack(spacing: 0) {
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("4 Giu 2025")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .padding(.bottom, 4)
+  HStack(spacing: 0) {
+      VStack(alignment: .trailing, spacing: 4) {
+          Text("4 Jun 2025")
+              .font(.subheadline)
+              .fontWeight(.bold)
+              .padding(.bottom, 4)
 
-                Text("New York, USA")
-                    .font(.subheadline)
-                    .fontWeight(.regular)
-                    .multilineTextAlignment(.trailing)
-            }
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+          Text("Napoli Centrale")
+              .font(.subheadline)
+              .fontWeight(.regular)
+              .multilineTextAlignment(.trailing)
+      }
+      .frame(maxWidth: .infinity, alignment: .trailing)
+      .padding(.horizontal, 10)
+      .padding(.vertical, 8)
 
-            Circle()
-                .fill(Color.black)
-                .frame(width: 80, height: 80)
-                .matchedGeometryEffect(id: "onboardingCircle", in: namespace)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Hard Brake")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                Text("Speed at stop")
-                    .font(.subheadline)
-                Text("55 km/h")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                Text("Speed at return")
-                    .font(.subheadline)
-                Text("15 km/h")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                Text("RPM lost")
-                    .font(.subheadline)
-                Text("0.70")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                Text("Gasoline Consumption")
-                    .font(.subheadline)
-                Text("0.07 €")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.red)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-        }
-        .padding(.horizontal, 20)
-        .offset(x: -10)
+      Circle()
+          .fill(Color.black)
+          .frame(width: 80, height: 80)
+      
+      VStack(alignment: .leading, spacing: 4) {
+          Text("Hard Brake")
+              .font(.headline)
+              .fontWeight(.bold)
+          Text("Speed at stop")
+              .font(.subheadline)
+          Text("55 km/h")
+              .font(.subheadline)
+              .fontWeight(.bold)
+          Text("Speed at return")
+              .font(.subheadline)
+          Text("15 km/h")
+              .font(.subheadline)
+              .fontWeight(.bold)
+          Text("RPM lost")
+              .font(.subheadline)
+          Text("0.70")
+              .font(.subheadline)
+              .fontWeight(.bold)
+          Text("Fuel Consumption")
+              .font(.subheadline)
+          Text("0.07 €")
+              .font(.subheadline)
+              .fontWeight(.bold)
+              .foregroundColor(.red)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 10)
+      .padding(.vertical, 8)
+  }
+  .padding(.horizontal, 20)
+  .offset(x: -10)
 
-        Spacer()
+  Spacer()
 
-        Text("Discover all the details about your brakes events but, most importantly, the consumption due to them!")
-            .font(.title2)
-            .multilineTextAlignment(.center)
-            .foregroundColor(.black)
-            .padding(.horizontal)
-        
-        Spacer()
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  Text("Discover all the details about your brakes events but, most importantly, the consumption due to them!")
+      .font(.title2)
+      .multilineTextAlignment(.center)
+      .foregroundColor(.black)
+      .padding(.horizontal, 40)
+  
+  Spacer()
+}
+.frame(maxWidth: .infinity, maxHeight: .infinity)
 }
 }
 
@@ -237,92 +317,38 @@ struct OnboardingPage5: View {
 @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding: Bool = false
 
 var body: some View {
-    VStack(spacing: 50) {
-        // ADD: Top header for Consumption Tanks with labels and line
-        VStack(spacing: 5) { // Spacing between line/ticks and labels
-            ZStack(alignment: .bottom) { // Align items to the bottom of the ZStack
-                // Horizontal line
-                Rectangle()
-                    .fill(Color.black)
-                    .frame(height: 2)
-                    .padding(.horizontal, 40) // Make the line span the width
+VStack(spacing: 20) {
+  Spacer()
+  
+  Image("Tanks")
+      .resizable()
+      .frame(width: 320, height: 370)
+      .padding(.top, 80)
+      .padding(.bottom, 5)
 
-                // Vertical tick marks on the line
-                HStack {
-                    ForEach(0..<3) { _ in
-                        Rectangle()
-                            .fill(Color.black)
-                            .frame(width: 2, height: 10)
-                            .offset(y: 4) // Adjust to sit on the 2pt line
-                            .frame(maxWidth: .infinity) // Distribute evenly
-                    }
-                }
-                .padding(.horizontal, 40)
-            }
-            
-            // Labels (WEEKLY, MONTHLY, YEARLY)
-            HStack {
-                Text("WEEKLY")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                Text("MONTHLY")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                Text("YEARLY")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-            }
-            .padding(.horizontal, 40) // Align labels with the line and ticks
-        }
+  (Text("In the Consumption Tanks section, you can see detailed consumption over the short / medium / long term.\n\n") +
+  Text("⚠️ IMPORTANT:").foregroundColor(.red) +
+  Text(" For your own safety remember to check your driving data ONLY AT THE END of your trip!"))
+      .font(.callout)
+      .multilineTextAlignment(.center)
+      .foregroundColor(.black)
+      .padding(.horizontal, 10) // Changed padding to 10
+      .fixedSize(horizontal: false, vertical: true)
+      .bold()
+  
+  Button {
+      hasCompletedOnboarding = true
+  } label: {
+      Text("Continue")
+          .font(.headline)
+          .foregroundColor(.blue)
+  }
+  .padding(.horizontal, 40)
+  .padding(.bottom, 40)
 
-        // ADD: TankView previews
-        HStack(spacing: 20) { // CHANGE: Increased spacing between tanks
-            TankView(tankLimit: 50.0, lostFuelLiters: 15.0, lostFuelCost: 25.0, timePeriod: "WEEKLY")
-                .frame(width: 100, height: 180)
-            TankView(tankLimit: 50.0, lostFuelLiters: 30.0, lostFuelCost: 50.0, timePeriod: "MONTHLY")
-                .frame(width: 100, height: 180)
-            TankView(tankLimit: 50.0, lostFuelLiters: 45.0, lostFuelCost: 75.0, timePeriod: "YEARLY")
-                .frame(width: 100, height: 180)
-        }
-        .padding(.horizontal)
-        
-        // ADD: New instructional text
-        Text("In the Consumption Tanks section, you can see detailed consumption over the short / medium / long term.")
-            .font(.subheadline)
-            .multilineTextAlignment(.center)
-            .foregroundColor(.black)
-            .padding(.horizontal)
-            .padding(.top, 50) // ADD: Padding to separate from tanks
-
-        Text("Remember to check your driving data after each trip to understand your fuel consumption!")
-            .font(.callout)
-            .foregroundColor(.orange)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal)
-            .padding(.top, 30) // CHANGE: Increased top padding for the text
-
-
-        Button {
-            hasCompletedOnboarding = true
-        } label: {
-            Text("Continue")
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.blue)
-                .cornerRadius(10)
-        }
-        .padding(.horizontal, 40)
-        .padding(.bottom, 40)
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  Spacer()
+}
+.frame(maxWidth: .infinity, maxHeight: .infinity)
 }
 }
 
@@ -331,50 +357,50 @@ let currentPage: Int
 let pageCount: Int
 
 var body: some View {
-    ZStack {
-        Rectangle()
-            .fill(Color.black)
-            .frame(height: 10)
-            .cornerRadius(5)
+ZStack {
+  Rectangle()
+      .fill(Color.black)
+      .frame(height: 10)
+      .cornerRadius(5)
+      .padding(.horizontal, -100)
 
-        HStack(spacing: 32) {
-            ForEach(0..<pageCount, id: \.self) { index in
-                ZStack {
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 36, height: 36)
+  HStack(spacing: 32) {
+      ForEach(0..<pageCount, id: \.self) { index in
+          ZStack {
+              Circle()
+                  .fill(Color.black)
+                  .frame(width: 36, height: 36)
 
-                    if index == currentPage {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 14, height: 14)
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 40)
-    }
+              if index == currentPage {
+                  Circle()
+                      .fill(Color.white)
+                      .frame(width: 14, height: 14)
+              }
+          }
+      }
+  }
+  .padding(.horizontal, 20)
+}
+.ignoresSafeArea(edges: .horizontal)
 }
 }
 
 extension Color {
 init(hex: String) {
-    let scanner = Scanner(string: hex)
-    _ = scanner.scanString("#")
+let scanner = Scanner(string: hex)
+_ = scanner.scanString("#")
 
-    var rgb: UInt64 = 0
-    scanner.scanHexInt64(&rgb)
+var rgb: UInt64 = 0
+scanner.scanHexInt64(&rgb)
 
-    let r = Double((rgb >> 16) & 0xFF) / 255.0
-    let g = Double((rgb >> 8) & 0xFF) / 255.0
-    let b = Double(rgb & 0xFF) / 255.0
+let r = Double((rgb >> 16) & 0xFF) / 255.0
+let g = Double((rgb >> 8) & 0xFF) / 255.0
+let b = Double(rgb & 0xFF) / 255.0
 
-    self.init(red: r, green: g, blue: b)
+self.init(red: r, green: g, blue: b)
 }
 }
 
 #Preview {
 OnboardingView()
 }
-
-
