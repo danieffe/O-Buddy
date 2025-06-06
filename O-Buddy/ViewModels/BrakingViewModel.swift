@@ -9,6 +9,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import SwiftUI // ADD: Import SwiftUI for @AppStorage
 
 class BrakingViewModel: ObservableObject {
 @Published var brakingEvents: [BrakingEvent] = []
@@ -16,6 +17,9 @@ class BrakingViewModel: ObservableObject {
 @Published var brakingIntensity: Double = 0
 @Published var fuelPrice: Double = 0.0
 @Published var expandedEventId: UUID?
+
+// ADD: Read vehicle mass from AppStorage
+@AppStorage("vehicleMass") private var storedVehicleMass: String = ""
 
 private var previousSpeed: Int = 0
 private var previousRPM: Int = 0
@@ -244,7 +248,8 @@ private func handleBrakingEvent(decelerationRate: Double, speed: Int, vInitial: 
       print("vInitial (km/h): \(vInitial), vFinal (km/h): \(speed)")
       print("vInitMS (m/s): \(vInitMS), vFinalMS (m/s): \(vFinalMS)")
 
-      let mass = 1300.0 // kg
+      // CHANGE: Use storedVehicleMass from AppStorage, default to 1300.0 if invalid/empty
+      let mass = Double(storedVehicleMass) ?? 1300.0 // kg
       let deltaEk = 0.5 * mass * (vInitMS * vInitMS - vFinalMS * vFinalMS)
       print("deltaEk (Joules): \(deltaEk)")
 

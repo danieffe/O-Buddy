@@ -75,8 +75,8 @@ struct OnboardingPage1: View {
 
 
 struct OnboardingPage2: View {
-    @State private var carMass: String = ""
-    @State private var selectedFuelType: String = "benzina"
+    @AppStorage("vehicleMass") private var carMass: String = ""
+    @AppStorage("selectedFuel") private var selectedFuelType: String = "benzina"
     @FocusState private var isMassInputFocused: Bool
     @Binding var isMassValid: Bool
 
