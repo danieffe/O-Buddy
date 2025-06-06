@@ -42,13 +42,13 @@ struct OnboardingView: View {
 struct OnboardingPage1: View {
     var body: some View {
         VStack(spacing: 10) {
-            Text("Welcome to O-Buddy")
+            Text("Welcome to O-Buddy".localized)
                 .font(.largeTitle)
                 .bold()
                 .foregroundColor(.black)
                 .padding(.top, 40)
             
-            Text("Your driving assistant ready to support you!")
+            Text("Your driving assistant ready to support you!".localized)
                 .font(.headline)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
@@ -61,7 +61,7 @@ struct OnboardingPage1: View {
                 .scaledToFit()
                 .frame(width: 280, height: 280)
 
-            Text("This app requires an OBD II interface to work.")
+            Text("This app requires an OBD II interface to work.".localized)
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black)
@@ -80,13 +80,12 @@ struct OnboardingPage2: View {
     @FocusState private var isMassInputFocused: Bool
     @Binding var isMassValid: Bool
 
-    // CHANGE: Mapping for fuel types display names
-    private let fuelAPINames = ["benzina", "gasolio", "gpl", "metano"] // Original API names
+    private let fuelAPINames = ["benzina", "gasolio", "gpl", "metano"]
     private let fuelDisplayNames: [String: String] = [
-        "benzina": "Petrol",
-        "gasolio": "Diesel",
-        "gpl": "LPG",
-        "metano": "Methane"
+        "benzina": "fuel_type_petrol",
+        "gasolio": "fuel_type_diesel",
+        "gpl": "fuel_type_lpg",
+        "metano": "fuel_type_methane"
     ]
 
     private func validateMass() {
@@ -100,7 +99,7 @@ struct OnboardingPage2: View {
     var body: some View {
         VStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 20) {
-                Text("Before starting we need some informations:")
+                Text("Before starting we need some informations:".localized)
                     .font(.title2)
                     .bold()
                     .foregroundColor(.black)
@@ -110,7 +109,7 @@ struct OnboardingPage2: View {
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("Insert here the mass of your car:")
+                Text("Insert here the mass of your car:".localized)
                     .font(.title3)
                     .foregroundColor(.black)
                     .padding(.horizontal, 40)
@@ -130,7 +129,7 @@ struct OnboardingPage2: View {
                         .onChange(of: carMass) { _, _ in
                             validateMass()
                         }
-                    Text("Kg")
+                    Text("Kg".localized)
                         .font(.body)
                         .foregroundColor(.black)
                         .padding(.leading, 8)
@@ -138,21 +137,21 @@ struct OnboardingPage2: View {
                 .padding(.horizontal, 40)
 
                 if !isMassValid {
-                    Text("* This section is mandatory to proceed.")
+                    Text("* This section is mandatory to proceed.".localized)
                         .font(.caption)
                         .foregroundColor(.red)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }
 
-                Text("Remember to check your car registration document for the correct mass value.")
+                Text("Remember to check your car registration document for the correct mass value.".localized)
                     .font(.caption)
                     .foregroundColor(.gray)
                     .padding(.top, 5)
                     .padding(.horizontal, 40)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("Ex: Italy")
+                Text("Ex: Italy".localized)
                     .font(.caption2)
                     .foregroundColor(.gray)
                     .padding(.horizontal, 42)
@@ -166,17 +165,16 @@ struct OnboardingPage2: View {
                     .padding(.horizontal, 40)
 
                 HStack {
-                    Text("Insert the type of the fuel :")
+                    Text("Insert the type of the fuel :".localized)
                         .font(.title3)
                         .foregroundColor(.black)
                         .fixedSize(horizontal: false, vertical: true)
                     
                     Spacer()
                     
-                    Picker("Select Fuel Type", selection: $selectedFuelType) {
-                        // CHANGE: Use fuelAPINames for iteration and fuelDisplayNames for text
+                    Picker("Select Fuel Type".localized, selection: $selectedFuelType) {
                         ForEach(fuelAPINames, id: \.self) { fuel in
-                            Text(fuelDisplayNames[fuel] ?? fuel.capitalized)
+                            Text((fuelDisplayNames[fuel] ?? fuel.capitalized).localized)
                         }
                     }
                     .pickerStyle(.menu)
@@ -193,7 +191,7 @@ struct OnboardingPage2: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") {
+                Button("Done".localized) {
                     isMassInputFocused = false
                     validateMass()
                 }
@@ -216,14 +214,14 @@ struct OnboardingPage3: View {
                 .frame(width: 80, height: 80)
                 .opacity(circleOpacity)
             
-            Text("This is an event!")
+            Text("This is an event!".localized)
                 .font(.largeTitle)
                 .bold()
                 .foregroundColor(.black)
                 .padding(.top, 40)
                 .opacity(textOpacity)
 
-            Text("You'll see events appear when you do an hard brake. Try to avoid them while you can.")
+            Text("You'll see events appear when you do an hard brake. Try to avoid them while you can.".localized)
                 .font(.title2)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black)
@@ -249,13 +247,15 @@ struct OnboardingPage3: View {
 struct OnboardingPage4: View {
     let namespace: Namespace.ID
 
+    private let exampleDate: Date = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 4))!
+
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
 
             HStack(spacing: 0) {
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text("4 Jun 2025")
+                    Text(exampleDate, format: .dateTime.day().month(.abbreviated).year())
                         .font(.subheadline)
                         .fontWeight(.bold)
                         .padding(.bottom, 4)
@@ -274,25 +274,25 @@ struct OnboardingPage4: View {
                     .frame(width: 80, height: 80)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Hard Brake")
+                    Text("Hard Brake".localized)
                         .font(.headline)
                         .fontWeight(.bold)
-                    Text("Speed at stop")
+                    Text("Speed at stop".localized)
                         .font(.subheadline)
                     Text("55 km/h")
                         .font(.subheadline)
                         .fontWeight(.bold)
-                    Text("Speed at return")
+                    Text("Speed at return".localized)
                         .font(.subheadline)
                     Text("15 km/h")
                         .font(.subheadline)
                         .fontWeight(.bold)
-                    Text("RPM lost")
+                    Text("RPM lost".localized)
                         .font(.subheadline)
                     Text("0.70")
                         .font(.subheadline)
                         .fontWeight(.bold)
-                    Text("Fuel Consumption")
+                    Text("Fuel Consumption".localized)
                         .font(.subheadline)
                     Text("0.07 €")
                         .font(.subheadline)
@@ -308,7 +308,7 @@ struct OnboardingPage4: View {
 
             Spacer()
 
-            Text("Discover all the details about your brakes events but, most importantly, the consumption due to them!")
+            Text("Discover all the details about your brakes events but, most importantly, the consumption due to them!".localized)
                 .font(.title2)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black)
@@ -334,9 +334,9 @@ struct OnboardingPage5: View {
                 .padding(.top, 80)
                 .padding(.bottom, 5)
 
-            (Text("In the Consumption Tanks section, you can see detailed consumption over the short / medium / long term.\n") +
-            Text("⚠️ IMPORTANT:").foregroundColor(.red) +
-            Text(" For your own safety remember to check your driving data ONLY AT THE END of your trip!").foregroundColor(.red))
+            (Text("onboarding_page5_part1".localized) +
+            Text("onboarding_page5_important_title".localized).foregroundColor(.red) +
+            Text("onboarding_page5_important_text".localized).foregroundColor(.red))
                 .font(.title2) // Changed font to title2 as per request
                 .multilineTextAlignment(.center)
                 .foregroundColor(.black)
@@ -347,7 +347,7 @@ struct OnboardingPage5: View {
             Button {
                 hasCompletedOnboarding = true
             } label: {
-                Text("Continue")
+                Text("Continue".localized)
                     .font(.headline)
                     .foregroundColor(.blue)
             }
