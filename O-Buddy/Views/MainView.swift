@@ -208,7 +208,7 @@ var body: some View {
                                        .resizable()
                                        .aspectRatio(contentMode: .fit)
                                        .frame(width: iconSize, height: iconSize)
-                                       .foregroundColor(.black)
+                                       .foregroundColor(.gray)
                                }
                                .position(x: geo.size.width - iconPadding - iconSize / 2, y: iconPadding + iconSize / 2 + 15)
 
@@ -218,7 +218,7 @@ var body: some View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: iconSize, height: iconSize)
-                        .foregroundColor(.black)
+                        .foregroundColor(.gray)
                 }
                 .position(x: iconPadding + iconSize / 2, y: iconPadding + iconSize / 2 + 15)
 
