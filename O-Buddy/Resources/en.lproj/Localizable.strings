@@ -13,3 +13,16 @@
 "Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations." = "Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations.";
 "No fuel stations found and no fallback price available." = "No fuel stations found and no fallback price available.";
 "No fuel stations found for the current location and fuel type." = "No fuel stations found for the current location and fuel type.";
+"Vehicle Information" = "Vehicle Information";
+"Select Fuel Type" = "Select Fuel Type";
+"fuel_type_petrol" = "Petrol";
+"fuel_type_diesel" = "Diesel";
+"fuel_type_lpg" = "LPG";
+"fuel_type_methane" = "Methane";
+"Vehicle Mass" = "Vehicle Mass";
+"Enter mass in Kg" = "Enter mass in Kg";
+"Please enter a valid positive number for vehicle mass." = "Please enter a valid positive number for vehicle mass.";
+"About O-Buddy" = "About O-Buddy";
+"Version" = "Version";
+"Settings" = "Settings";
+"Done" = "Done";

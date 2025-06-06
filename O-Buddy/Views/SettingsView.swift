@@ -16,10 +16,10 @@ struct SettingsView: View {
     // CHANGE: Mapping for fuel types display names
     private let fuelAPINames = ["benzina", "gasolio", "gpl", "metano"] // Original API names
     private let fuelDisplayNames: [String: String] = [
-        "benzina": "Petrol",
-        "gasolio": "Diesel",
-        "gpl": "LPG",
-        "metano": "Methane"
+        "benzina": "fuel_type_petrol",
+        "gasolio": "fuel_type_diesel",
+        "gpl": "fuel_type_lpg",
+        "metano": "fuel_type_methane"
     ]
     
     @FocusState private var isMassInputFocused: Bool
@@ -41,20 +41,20 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 // MARK: Vehicle Information Section
-                Section(header: Text("Vehicle Information")) {
-                    Picker("Select Fuel Type", selection: $selectedFuel) {
+                Section(header: Text("Vehicle Information".localized)) {
+                    Picker("Select Fuel Type".localized, selection: $selectedFuel) {
                         // CHANGE: Use fuelAPINames for iteration and fuelDisplayNames for text
                         ForEach(fuelAPINames, id: \.self) { fuelType in
-                            Text(fuelDisplayNames[fuelType] ?? fuelType.capitalized).tag(fuelType)
+                            Text((fuelDisplayNames[fuelType] ?? fuelType).localized).tag(fuelType)
                         }
                     }
                     .pickerStyle(.menu) // Modern, compact style for selection
                     
                     // Vehicle Mass input
                     HStack {
-                        Text("Vehicle Mass")
+                        Text("Vehicle Mass".localized)
                         Spacer()
-                        TextField("Enter mass in Kg", text: $vehicleMass)
+                        TextField("Enter mass in Kg".localized, text: $vehicleMass)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .foregroundColor(isMassValid ? .primary : .red)
@@ -64,22 +64,22 @@ struct SettingsView: View {
                             .focused($isMassInputFocused)
                     }
                     if !isMassValid {
-                        Text("Please enter a valid positive number for vehicle mass.")
+                        Text("Please enter a valid positive number for vehicle mass.".localized)
                             .font(.caption)
                             .foregroundColor(.red)
                     }
                 }
                 
                 // MARK: About App Section
-                Section(header: Text("About O-Buddy")) {
+                Section(header: Text("About O-Buddy".localized)) {
                     HStack {
-                        Text("Version")
+                        Text("Version".localized)
                         Spacer()
                         Text("1.0.0") // Replace with dynamic version if available
                     }
                 }
             }
-            .navigationTitle("Settings") // Title for the navigation bar
+            .navigationTitle("Settings".localized) // Title for the navigation bar
             .navigationBarTitleDisplayMode(.inline) // Compact title display
             .onAppear { // Validate mass on appear
                 validateMass()
@@ -87,7 +87,7 @@ struct SettingsView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Done") {
+                    Button("Done".localized) {
                         isMassInputFocused = false
                         validateMass()
                     }

@@ -13,3 +13,16 @@
 "Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations." = "Inserisci un numero positivo valido per la massa del tuo veicolo nelle Impostazioni per garantire calcoli accurati.";
 "No fuel stations found and no fallback price available." = "Nessun distributore di carburante trovato e nessun prezzo di riserva disponibile.";
 "No fuel stations found for the current location and fuel type." = "Nessun distributore di carburante trovato per la posizione e il tipo di carburante attuali.";
+"Vehicle Information" = "Informazioni Veicolo";
+"Select Fuel Type" = "Seleziona Tipo Carburante";
+"fuel_type_petrol" = "Benzina";
+"fuel_type_diesel" = "Gasolio";
+"fuel_type_lpg" = "GPL";
+"fuel_type_methane" = "Metano";
+"Vehicle Mass" = "Massa Veicolo";
+"Enter mass in Kg" = "Inserisci massa in Kg";
+"Please enter a valid positive number for vehicle mass." = "Inserisci un numero positivo valido per la massa del veicolo.";
+"About O-Buddy" = "Informazioni su O-Buddy";
+"Version" = "Versione";
+"Settings" = "Impostazioni";
+"Done" = "Fatto";
