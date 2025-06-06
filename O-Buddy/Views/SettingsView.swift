@@ -13,7 +13,14 @@ struct SettingsView: View {
     @State private var isMassValid: Bool = true // State to track mass input validity
     // Le variabili @State per i toggle generali sono state rimosse
     
-    private let fuelTypes = ["benzina", "gasolio", "gpl", "metano"] // Available fuel types
+    // CHANGE: Mapping for fuel types display names
+    private let fuelAPINames = ["benzina", "gasolio", "gpl", "metano"] // Original API names
+    private let fuelDisplayNames: [String: String] = [
+        "benzina": "Petrol",
+        "gasolio": "Diesel",
+        "gpl": "LPG",
+        "metano": "Methane"
+    ]
     
     @FocusState private var isMassInputFocused: Bool
 
@@ -36,8 +43,9 @@ struct SettingsView: View {
                 // MARK: Vehicle Information Section
                 Section(header: Text("Vehicle Information")) {
                     Picker("Select Fuel Type", selection: $selectedFuel) {
-                        ForEach(fuelTypes, id: \.self) { fuelType in
-                            Text(fuelType.capitalized).tag(fuelType)
+                        // CHANGE: Use fuelAPINames for iteration and fuelDisplayNames for text
+                        ForEach(fuelAPINames, id: \.self) { fuelType in
+                            Text(fuelDisplayNames[fuelType] ?? fuelType.capitalized).tag(fuelType)
                         }
                     }
                     .pickerStyle(.menu) // Modern, compact style for selection

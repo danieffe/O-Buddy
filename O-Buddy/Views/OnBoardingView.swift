@@ -80,7 +80,14 @@ struct OnboardingPage2: View {
     @FocusState private var isMassInputFocused: Bool
     @Binding var isMassValid: Bool
 
-    private let fuelTypes = ["benzina", "gasolio", "gpl", "metano"]
+    // CHANGE: Mapping for fuel types display names
+    private let fuelAPINames = ["benzina", "gasolio", "gpl", "metano"] // Original API names
+    private let fuelDisplayNames: [String: String] = [
+        "benzina": "Petrol",
+        "gasolio": "Diesel",
+        "gpl": "LPG",
+        "metano": "Methane"
+    ]
 
     private func validateMass() {
         if let mass = Double(carMass), mass > 0 {
@@ -167,8 +174,9 @@ struct OnboardingPage2: View {
                     Spacer()
                     
                     Picker("Select Fuel Type", selection: $selectedFuelType) {
-                        ForEach(fuelTypes, id: \.self) { fuel in
-                            Text(fuel.capitalized)
+                        // CHANGE: Use fuelAPINames for iteration and fuelDisplayNames for text
+                        ForEach(fuelAPINames, id: \.self) { fuel in
+                            Text(fuelDisplayNames[fuel] ?? fuel.capitalized)
                         }
                     }
                     .pickerStyle(.menu)
