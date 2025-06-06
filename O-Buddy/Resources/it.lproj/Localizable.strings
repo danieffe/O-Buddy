@@ -1,0 +1,15 @@
+"Driving style" = "Stile di guida";
+"Actual speed" = "Velocità attuale";
+"Daily brakes:" = "Frenate giornaliere:";
+"Daily consumption:" = "Consumo giornaliero:";
+"Searching for OBD devices..." = "Ricerca dispositivi OBD...";
+"Hard Brake" = "Frenata brusca";
+"Speed at stop" = "Velocità all'arresto";
+"Speed at return" = "Velocità al ritorno";
+"RPM lost" = "RPM persi";
+"Fuel Consumption" = "Consumo carburante";
+"Vehicle Mass Required" = "Massa Veicolo Richiesta";
+"Go to Settings" = "Vai alle Impostazioni";
+"Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations." = "Inserisci un numero positivo valido per la massa del tuo veicolo nelle Impostazioni per garantire calcoli accurati.";
+"No fuel stations found and no fallback price available." = "Nessun distributore di carburante trovato e nessun prezzo di riserva disponibile.";
+"No fuel stations found for the current location and fuel type." = "Nessun distributore di carburante trovato per la posizione e il tipo di carburante attuali.";

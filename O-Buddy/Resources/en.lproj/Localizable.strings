@@ -1,0 +1,15 @@
+"Driving style" = "Driving style";
+"Actual speed" = "Actual speed";
+"Daily brakes:" = "Daily brakes:";
+"Daily consumption:" = "Daily consumption:";
+"Searching for OBD devices..." = "Searching for OBD devices...";
+"Hard Brake" = "Hard Brake";
+"Speed at stop" = "Speed at stop";
+"Speed at return" = "Speed at return";
+"RPM lost" = "RPM lost";
+"Fuel Consumption" = "Fuel Consumption";
+"Vehicle Mass Required" = "Vehicle Mass Required";
+"Go to Settings" = "Go to Settings";
+"Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations." = "Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations.";
+"No fuel stations found and no fallback price available." = "No fuel stations found and no fallback price available.";
+"No fuel stations found for the current location and fuel type." = "No fuel stations found for the current location and fuel type.";

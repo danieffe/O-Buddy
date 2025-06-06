@@ -127,7 +127,7 @@ struct MainView: View {
                     Group {
                                           if obdViewModel.isConnected {
                                               VStack {
-                                                  Text("Driving style")
+                                                  Text("Driving style".localized)
                                                       .font(.body)
                                                       .fontWeight(.bold)
                                                       .foregroundColor(.black)
@@ -142,7 +142,7 @@ struct MainView: View {
                                               )
 
                                               VStack {
-                                                  Text("Actual speed")
+                                                  Text("Actual speed".localized)
                                                       .font(.body)
                                                       .fontWeight(.bold)
                                                       .foregroundColor(.black)
@@ -157,7 +157,7 @@ struct MainView: View {
                                               )
 
                                               VStack {
-                                                  Text("Daily brakes:")
+                                                  Text("Daily brakes:".localized)
                                                       .font(.body)
                                                       .fontWeight(.bold)
                                                       .foregroundColor(.black)
@@ -172,7 +172,7 @@ struct MainView: View {
                                               )
 
                                               VStack {
-                                                  Text("Daily consumption:")
+                                                  Text("Daily consumption:".localized)
                                                       .font(.body)
                                                       .fontWeight(.bold)
                                                       .foregroundColor(.black)
@@ -186,7 +186,7 @@ struct MainView: View {
                                                   y: circleCenterY - 80
                                               )
                                           } else {
-                                              Text("Searching for OBD devices...")
+                                              Text("Searching for OBD devices...".localized)
                                                   .font(.title2)
                                                   .foregroundColor(.gray)
                                                   .multilineTextAlignment(.center)
@@ -258,25 +258,25 @@ struct MainView: View {
                                             Spacer(minLength: eventCircleSize + 40)
 
                                             VStack(alignment: .leading, spacing: 4) {
-                                                Text("Hard Brake")
+                                                Text("Hard Brake".localized)
                                                     .font(.subheadline)
                                                     .fontWeight(.bold)
-                                                Text("Speed at stop")
+                                                Text("Speed at stop".localized)
                                                     .font(.caption)
                                                 Text("\(event.speed ?? 0) km/h")
                                                     .font(.caption)
                                                     .fontWeight(.bold)
-                                                Text("Speed at return")
+                                                Text("Speed at return".localized)
                                                     .font(.caption)
                                                 Text(event.speedAtReturn != nil ? "\(event.speedAtReturn!) km/h" : "N/A")
                                                     .font(.caption)
                                                     .fontWeight(.bold)
-                                                Text("RPM lost")
+                                                Text("RPM lost".localized)
                                                     .font(.caption)
                                                 Text(String(format: "%.2f", event.intensity))
                                                     .font(.caption)
                                                     .fontWeight(.bold)
-                                                Text("Fuel Consumption")
+                                                Text("Fuel Consumption".localized)
                                                     .font(.caption)
                                                 Text(String(format: "%.2f €", event.fuelCost))
                                                     .font(.caption)
@@ -308,13 +308,13 @@ struct MainView: View {
                     }
                 }
                 .onChange(of: selectedFuel) { _ in fetchData() }
-                .alert("Vehicle Mass Required", isPresented: $showMassAlert) {
-                    Button("Go to Settings") {
+                .alert("Vehicle Mass Required".localized, isPresented: $showMassAlert) {
+                    Button("Go to Settings".localized) {
                         showMassAlert = false
                         showSettingsView = true
                     }
                 } message: {
-                    Text("Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations.")
+                    Text("Please enter a valid positive number for your vehicle's mass in the Settings to ensure accurate calculations.".localized)
                 }
             }
         }
@@ -343,17 +343,23 @@ struct MainView: View {
                         print("DEBUG: Using fallback fuel price: \(fallbackPrice) €/L")
                     } else {
                         self.brakingViewModel.fuelPrice = 0.0
-                        print("DEBUG: No fuel stations found and no fallback price available in MainView.")
+                        print("DEBUG: No fuel stations found and no fallback price available.".localized)
                     }
                 } else {
                     self.brakingViewModel.fuelPrice = self.averagePrice
                     print("DEBUG: Fetched \(fetchedStations.count) stations in MainView. Average price for \(self.selectedFuel): \(self.averagePrice) €/L")
                 }
                 if fetchedStations.isEmpty {
-                    print("DEBUG: No fuel stations found for the current location and fuel type in MainView.")
+                    print("DEBUG: No fuel stations found for the current location and fuel type.".localized)
                 }
             }
         }
+    }
+}
+
+extension String {
+    var localized: String {
+        NSLocalizedString(self, comment: "")
     }
 }
 
