@@ -26,3 +26,14 @@
 "Version" = "Version";
 "Settings" = "Settings";
 "Done" = "Done";
+"WEEKLY" = "WEEKLY";
+"MONTHLY" = "MONTHLY";
+"YEARLY" = "YEARLY";
+"dashboard_overall_brakes" = "Your Overall: %d total brakes";
+"dashboard_consumption_limit" = "Your Consumption limit : 5L";
+"Consumption tanks" = "Consumption tanks";
+"time_period_week" = "week";
+"time_period_month" = "month";
+"time_period_year" = "year";
+"tank_summary_message" = "in a %@ you\nhave lost";
+"tank_lost_fuel_display" = "%.0fL (%.0f$)";

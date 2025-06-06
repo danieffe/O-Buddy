@@ -60,11 +60,13 @@ struct TankView: View {
   // ADD: Timer for wave animation
   let timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
 
-  private var formattedTimePeriod: String {
+  // REMOVE: formattedTimePeriod
+  // ADD: formattedTimePeriodKey
+  private var formattedTimePeriodKey: String {
       switch timePeriod.uppercased() {
-      case "WEEKLY": return "week"
-      case "MONTHLY": return "month"
-      case "YEARLY": return "year"
+      case "WEEKLY": return "time_period_week"
+      case "MONTHLY": return "time_period_month"
+      case "YEARLY": return "time_period_year"
       default: return timePeriod.lowercased()
       }
   }
@@ -144,12 +146,14 @@ struct TankView: View {
   var body: some View {
       VStack(spacing: 0) {
           VStack {
-              Text("in a \(formattedTimePeriod) you\nhave lost")
+              // CHANGE: Use localized string with format argument
+              Text(String(format: "tank_summary_message".localized, formattedTimePeriodKey.localized))
                   .multilineTextAlignment(.center)
                   .font(.body)
                   .foregroundColor(.black)
               
-              Text("\(String(format: "%.0f", lostFuelLiters))L (\(String(format: "%.0f", lostFuelCost))$)")
+              // CHANGE: Use localized string with format arguments for L and $
+              Text(String(format: "tank_lost_fuel_display".localized, lostFuelLiters, lostFuelCost))
                   .font(.headline)
                   .fontWeight(.bold)
                   .foregroundColor(.red)

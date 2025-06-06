@@ -26,3 +26,14 @@
 "Version" = "Versione";
 "Settings" = "Impostazioni";
 "Done" = "Fatto";
+"WEEKLY" = "SETTIMANALE";
+"MONTHLY" = "MENSILE";
+"YEARLY" = "ANNUALE";
+"dashboard_overall_brakes" = "Totale frenate: %d";
+"dashboard_consumption_limit" = "Limite di consumo: 5L";
+"Consumption tanks" = "Serbatoi di consumo";
+"time_period_week" = "settimana";
+"time_period_month" = "mese";
+"time_period_year" = "anno";
+"tank_summary_message" = "in %@ hai\nperso";
+"tank_lost_fuel_display" = "%.0fL (%.0f€)";

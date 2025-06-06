@@ -45,7 +45,7 @@ struct DashboardView: View {
                                         .onTapGesture {
                                             selectedTab = index
                                         }
-                                    Text(cardData[index].title)
+                                    Text(cardData[index].title.localized)
                                         .font(.caption)
                                         .fontWeight(selectedTab == index ? .bold : .regular)
                                         .foregroundColor(.black)
@@ -63,12 +63,12 @@ struct DashboardView: View {
                 .padding(.top, 60)
                 .padding(.bottom, 50)
 
-                Text("Your Overall: \(brakingViewModel.brakingEvents.count) total brakes")
+                Text(String(format: "dashboard_overall_brakes".localized, brakingViewModel.brakingEvents.count))
                     .font(.headline)
                     .foregroundColor(.gray)
                     .padding(.bottom, 20)
                 
-                Text("Your Consumption limit : 5L")
+                Text("dashboard_consumption_limit".localized)
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .padding(.bottom, 20)
@@ -105,7 +105,7 @@ struct DashboardView: View {
                 .frame(height: 480) // Adjusted height to ensure the top border is visible
                 .padding(.bottom, 20)
             }
-            .navigationTitle("Consumption tanks")
+            .navigationTitle("Consumption tanks".localized)
             .navigationBarTitleDisplayMode(.inline)
         }
         .ignoresSafeArea()
